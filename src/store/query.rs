@@ -1,6 +1,7 @@
 
-pub enum Query {
-    Full(String),
-    Title(String),
-    Author(String),
+#[derive(Clone)]
+pub enum Query<'a> {
+    Full(&'a[String]),
+    Title(&'a[String]),
+    Author(&'a[String]),
 }

@@ -8,12 +8,20 @@ use std::{fs, io};
 
 use anyhow::{Context, Result, bail};
 use bincode::Options;
-pub use paper::Paper;
+pub use paper::{Paper, PaperCopy, MatchByTitle};
 pub use query::Query;
+
+pub async fn get_store_results(query: &Vec<String>, lib: &Library) -> Result<Vec<PaperCopy>> {
+    Ok(lib
+        .iter_matches(Query::Full(query.as_slice()))
+        .cloned()
+        .collect())
+}
+
 
 #[derive(Debug)]
 pub struct Library {
-    papers: Vec<Paper>,
+    papers: Vec<PaperCopy>,
     modified: bool,
     data_dir: PathBuf,
 }
@@ -115,10 +123,14 @@ impl Library {
         Ok(())
     }
 
-    pub fn add(&mut self, paper: Paper) {
-        match self.papers.iter_mut().find(|p| *p == &paper) {
-            None => self.papers.push(paper),
-            Some(_) => {}
+    pub fn add(&mut self, location: PathBuf, paper: Paper) {
+        match self.papers.iter().find(|&p| p.paper == paper) {
+            None => self.papers.push(PaperCopy {
+                paper, location
+            }),
+            Some(copy) => {
+                
+            }
         };
 
         self.modified = true;
@@ -126,17 +138,12 @@ impl Library {
 
     pub fn iter_matches<'a>(
         &'a self,
-        query: &'a Query,
-    ) -> impl Iterator<Item = &'a Paper> {
-        self.papers.iter().filter(move |dir| dir.matches(&query))
+        query: Query<'a>,
+    ) -> impl Iterator<Item = &'a PaperCopy> {
+        self.papers.iter().filter(move |copy| copy.paper.matches(query.clone()))
     }
 
-    pub fn into_iter_matches(
-       self,
-        query: Query,
-    ) -> impl IntoIterator<Item = Paper> {
-        self.papers.into_iter().filter(move |dir| dir.matches(&query))
-    }
+
 
     fn get_path<P: AsRef<Path>>(data_dir: P) -> PathBuf {
         data_dir.as_ref().join("lib.db")

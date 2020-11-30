@@ -19,3 +19,15 @@ pub fn xivar_data_dir() -> Result<PathBuf> {
 
     Ok(data_dir)
 }
+
+pub fn xivar_document_dir() -> Result<PathBuf> {
+    let data_dir = match env::var_os("XIVAR_DOCUMENT_DIR") {
+        Some(data_osstr) => PathBuf::from(data_osstr),
+        None => match dirs::document_dir() {
+            Some(data_dir) => data_dir,
+            None => bail!("could not find database directory, please set XIVAR_DOCUMENT_DIR manually"),
+        },
+    };
+
+    Ok(data_dir)
+}

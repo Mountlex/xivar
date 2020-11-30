@@ -1,7 +1,9 @@
 mod search;
+mod fetch;
 
 use anyhow::Result;
 use search::Search;
+use fetch::Fetch;
 
 use clap::Clap;
 
