@@ -125,10 +125,17 @@ impl Library {
     }
 
     pub fn iter_matches<'a>(
-        &'a mut self,
+        &'a self,
         query: &'a Query,
-    ) -> impl DoubleEndedIterator<Item = &'a Paper> {
+    ) -> impl Iterator<Item = &'a Paper> {
         self.papers.iter().filter(move |dir| dir.matches(&query))
+    }
+
+    pub fn into_iter_matches(
+       self,
+        query: Query,
+    ) -> impl IntoIterator<Item = Paper> {
+        self.papers.into_iter().filter(move |dir| dir.matches(&query))
     }
 
     fn get_path<P: AsRef<Path>>(data_dir: P) -> PathBuf {
@@ -136,13 +143,13 @@ impl Library {
     }
 }
 
-impl Drop for Library {
-    fn drop(&mut self) {
-        if let Err(e) = self.save() {
-            println!("Error: {}", e)
-        }
-    }
-}
+// impl Drop for Library {
+//     fn drop(&mut self) {
+//         if let Err(e) = self.save() {
+//             println!("Error: {}", e)
+//         }
+//     }
+// }
 
 fn persist<P: AsRef<Path>>(file: NamedTempFile, path: P) -> Result<(), PersistError> {
     file.persist(&path)?;

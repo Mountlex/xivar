@@ -1,7 +1,7 @@
-mod query;
+mod search;
 
 use anyhow::Result;
-use query::Query;
+use search::Search;
 
 use clap::Clap;
 
@@ -11,13 +11,13 @@ pub trait Command {
 
 #[derive(Clap)]
 pub enum Cli {
-    Query(Query)
+    Search(Search),
 }
 
 impl Command for Cli {
     fn run(&self) -> Result<()> {
         match self {
-            Cli::Query(cmd) => cmd.run(),
+            Cli::Search(cmd) => cmd.run(),
         }
     }
 }
