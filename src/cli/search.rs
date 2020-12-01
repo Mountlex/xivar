@@ -120,7 +120,9 @@ where
 {
     for entry in entries {
         let mut handle = handle_ref.lock().await;
-        writeln!(handle, "{}", entry);
+        if let Err(_) = writeln!(handle, "{}", entry) {
+            // If this error occurs, fzf already closed, which is no problem.
+        }
     }
     Ok(())
 }

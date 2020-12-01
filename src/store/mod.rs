@@ -159,7 +159,7 @@ impl Library {
 
     pub fn clean(&mut self) -> Vec<PaperCopy> {
         let mut to_remove: Vec<usize> = vec![];
-        for (idx, paper) in self
+        for (idx, _) in self
             .papers
             .iter()
             .filter(|paper| !paper.exists())
