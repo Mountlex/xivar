@@ -11,7 +11,7 @@ use bincode::Options;
 pub use paper::{Paper, PaperCopy, MatchByTitle};
 pub use query::Query;
 
-pub async fn get_store_results(query: &Vec<String>, lib: &Library) -> Result<Vec<PaperCopy>> {
+pub fn get_store_results(query: &Vec<String>, lib: &Library) -> Result<Vec<PaperCopy>> {
     Ok(lib
         .iter_matches(Query::Full(query.as_slice()))
         .cloned()
@@ -123,12 +123,12 @@ impl Library {
         Ok(())
     }
 
-    pub fn add(&mut self, location: PathBuf, paper: Paper) {
+    pub fn add(&mut self, location: &PathBuf, paper: Paper) {
         match self.papers.iter().find(|&p| p.paper == paper) {
             None => self.papers.push(PaperCopy {
-                paper, location
+                paper, location: location.clone()
             }),
-            Some(copy) => {
+            Some(_) => {
                 
             }
         };

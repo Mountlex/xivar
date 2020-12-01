@@ -97,7 +97,7 @@ impl std::fmt::Display for Paper {
 }
 
 fn any_match(qstrings: &[String], sstring: &str) -> bool {
-    qstrings.iter().any(|s| sstring.contains(s))
+    qstrings.iter().any(|s| sstring.to_lowercase().contains(&s.to_lowercase()))
 }
 
 

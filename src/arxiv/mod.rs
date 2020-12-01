@@ -1,4 +1,4 @@
-use std::io::Write;
+use std::{io::Write};
 
 use anyhow::{Result, anyhow};
 use arxiv::ArxivQueryBuilder;
@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use crate::store::Paper;
 
 
-pub async fn get_online_results(query: Vec<String>) -> Result<Vec<Paper>> {
+pub async fn get_online_results(query: &Vec<String>) -> Result<Vec<Paper>> {
     let query = ArxivQueryBuilder::new()
         .search_query(query.join("+").as_ref())
         .start(0)
