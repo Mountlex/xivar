@@ -63,13 +63,21 @@ impl Command for Search {
                             if output.is_file() {
                                 output.to_owned()
                             } else {
-                                output.with_file_name(paper.id.as_str())
+                                output.join(paper.id.as_str())
                             }
                         } else {
-                            config::xivar_document_dir()?.with_file_name(paper.id.as_str())
+                            config::xivar_document_dir()?.join(paper.id.as_str())
                         }
                         .with_extension("pdf");
+
+                        let spinner = indicatif::ProgressBar::new_spinner();
+                        spinner.set_style(
+                            indicatif::ProgressStyle::default_spinner().template("{msg} {spinner:.cyan/blue} "),
+                        );
+                        spinner.set_message("Downloading");
+                        spinner.enable_steady_tick(10);
                         task::block_on(download_pdf(&paper, &dest))?;
+                        spinner.abandon_with_message(&format!("Saved file to {:?}!", dest));
                         lib.add(&dest, paper);
                         open::that(dest)?;
                         lib.save()?;
