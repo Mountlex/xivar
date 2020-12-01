@@ -9,9 +9,7 @@ pub struct Fzf {
 impl Fzf {
     pub fn new() -> Result<Self> {
         let mut command = Command::new("fzf");
-        command
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped());
+        command.stdin(Stdio::piped()).stdout(Stdio::piped());
 
         Ok(Fzf {
             child: command.spawn().context("could not launch fzf")?,

@@ -1,11 +1,10 @@
-use std::{io::Write};
+use std::io::Write;
 
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use arxiv::ArxivQueryBuilder;
 use std::path::PathBuf;
 
 use crate::store::Paper;
-
 
 pub async fn get_online_results(query: &Vec<String>) -> Result<Vec<Paper>> {
     let query = ArxivQueryBuilder::new()
@@ -22,14 +21,12 @@ pub async fn get_online_results(query: &Vec<String>) -> Result<Vec<Paper>> {
         .collect())
 }
 
-
 pub async fn download_pdf(paper: &Paper, out_path: &PathBuf) -> Result<()> {
-    let mut response = surf::get(&paper.pdf_url).await.map_err(|err| anyhow!(err))?;
+    let mut response = surf::get(&paper.pdf_url)
+        .await
+        .map_err(|err| anyhow!(err))?;
     let body = response.body_bytes().await.map_err(|err| anyhow!(err))?;
-    let mut file = std::fs::File::create(
-        out_path
-            .with_extension("pdf"),
-    )?;
+    let mut file = std::fs::File::create(out_path.with_extension("pdf"))?;
     file.write_all(&body)?;
     Ok(())
 }

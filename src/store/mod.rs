@@ -2,13 +2,16 @@ mod paper;
 mod query;
 
 use serde::{Deserialize, Serialize};
-use tempfile::{NamedTempFile, PersistError};
-use std::{io::Write, path::{Path, PathBuf}};
 use std::{fs, io};
+use std::{
+    io::Write,
+    path::{Path, PathBuf},
+};
+use tempfile::{NamedTempFile, PersistError};
 
-use anyhow::{Context, Result, bail};
+use anyhow::{bail, Context, Result};
 use bincode::Options;
-pub use paper::{Paper, PaperCopy, MatchByTitle};
+pub use paper::{MatchByTitle, Paper, PaperCopy};
 pub use query::Query;
 
 pub fn get_store_results(query: &Vec<String>, lib: &Library) -> Result<Vec<PaperCopy>> {
@@ -17,7 +20,6 @@ pub fn get_store_results(query: &Vec<String>, lib: &Library) -> Result<Vec<Paper
         .cloned()
         .collect())
 }
-
 
 #[derive(Debug)]
 pub struct Library {
@@ -126,37 +128,67 @@ impl Library {
     pub fn add(&mut self, location: &PathBuf, paper: Paper) {
         match self.papers.iter().find(|&p| p.paper == paper) {
             None => self.papers.push(PaperCopy {
-                paper, location: location.clone()
+                paper,
+                location: location.clone(),
             }),
-            Some(_) => {
-                
-            }
+            Some(_) => {}
         };
 
         self.modified = true;
     }
 
-    pub fn iter_matches<'a>(
-        &'a self,
-        query: Query<'a>,
-    ) -> impl Iterator<Item = &'a PaperCopy> {
-        self.papers.iter().filter(move |copy| copy.paper.matches(query.clone()))
+    pub fn remove(&mut self, paper: &Paper) -> bool {
+        if let Some(idx) = self.papers.iter().position(|copy| &copy.paper == paper) {
+            self.papers.swap_remove(idx);
+            self.modified = true;
+            return true;
+        }
+
+        false
     }
 
+    pub fn iter_matches<'a>(&'a self, query: Query<'a>) -> impl Iterator<Item = &'a PaperCopy> {
+        self.papers
+            .iter()
+            .filter(move |copy| copy.paper.matches(query.clone()))
+    }
 
+    pub fn iter_all<'a>(&'a self) -> impl Iterator<Item = &'a PaperCopy> {
+        self.papers.iter()
+    }
+
+    pub fn clean(&mut self) -> Vec<PaperCopy> {
+        let mut to_remove: Vec<usize> = vec![];
+        for (idx, paper) in self
+            .papers
+            .iter()
+            .filter(|paper| !paper.exists())
+            .enumerate()
+        {
+            to_remove.push(idx);
+        }
+        to_remove.sort();
+        to_remove.reverse();
+        let removed = to_remove
+            .iter()
+            .map(|&i| self.papers.swap_remove(i))
+            .collect();
+        self.modified = true;
+        removed
+    }
 
     fn get_path<P: AsRef<Path>>(data_dir: P) -> PathBuf {
         data_dir.as_ref().join("lib.db")
     }
 }
 
-// impl Drop for Library {
-//     fn drop(&mut self) {
-//         if let Err(e) = self.save() {
-//             println!("Error: {}", e)
-//         }
-//     }
-// }
+impl Drop for Library {
+    fn drop(&mut self) {
+        if let Err(e) = self.save() {
+            println!("Error: {}", e)
+        }
+    }
+}
 
 fn persist<P: AsRef<Path>>(file: NamedTempFile, path: P) -> Result<(), PersistError> {
     file.persist(&path)?;

@@ -1,9 +1,9 @@
 use super::query::Query;
 
-use anyhow::{Result, bail};
+use anyhow::{bail, Result};
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
-use regex::Regex;
 
 #[derive(Debug, Default, Serialize, Deserialize, Eq, PartialEq, Clone)]
 pub struct ArxivIdentifier {
@@ -47,8 +47,6 @@ pub struct Paper {
     authors: Vec<String>,
 }
 
-
-
 impl PartialEq for Paper {
     fn eq(&self, other: &Paper) -> bool {
         self.id == other.id
@@ -70,13 +68,10 @@ impl Paper {
         })
     }
 
-    
-
     pub fn matches(&self, query: Query) -> bool {
         match query {
             Query::Full(qstrings) => {
-                any_match(qstrings, &self.authors.join(" "))
-                    | any_match(qstrings, &self.title)
+                any_match(qstrings, &self.authors.join(" ")) | any_match(qstrings, &self.title)
             }
             Query::Author(qstrings) => any_match(qstrings, &self.authors.join(" ")),
             Query::Title(qstrings) => any_match(qstrings, &self.title),
@@ -97,9 +92,10 @@ impl std::fmt::Display for Paper {
 }
 
 fn any_match(qstrings: &[String], sstring: &str) -> bool {
-    qstrings.iter().any(|s| sstring.to_lowercase().contains(&s.to_lowercase()))
+    qstrings
+        .iter()
+        .any(|s| sstring.to_lowercase().contains(&s.to_lowercase()))
 }
-
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PaperCopy {

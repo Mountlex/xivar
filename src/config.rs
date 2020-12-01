@@ -1,6 +1,6 @@
 use std::path::PathBuf;
 
-use anyhow::{Result, bail};
+use anyhow::{bail, Result};
 
 use std::env;
 
@@ -21,7 +21,7 @@ pub fn xivar_data_dir() -> Result<PathBuf> {
 
 pub fn xivar_document_dir() -> Result<PathBuf> {
     let config_file = match dirs::config_dir() {
-        Some(mut config_dir) => { 
+        Some(mut config_dir) => {
             config_dir.push("xivar");
             config_dir.push("xivar.toml");
             config_dir
@@ -29,11 +29,12 @@ pub fn xivar_document_dir() -> Result<PathBuf> {
         None => bail!("could not find database directory, please set XIVAR_DOCUMENT_DIR manually"),
     };
 
-
     let mut settings = config::Config::default();
     settings
-        .merge(config::File::from(config_file)).unwrap()
-        .merge(config::Environment::with_prefix("XIVAR")).unwrap();
+        .merge(config::File::from(config_file))
+        .unwrap()
+        .merge(config::Environment::with_prefix("XIVAR"))
+        .unwrap();
 
     let path = settings.get::<String>("document_dir")?;
     Ok(PathBuf::from(path))

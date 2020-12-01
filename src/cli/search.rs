@@ -7,7 +7,7 @@ use crate::{
     arxiv::{download_pdf, get_online_results},
     store::{Paper, PaperCopy},
 };
-use anyhow::{Context, Result};
+use anyhow::Result;
 use async_std::prelude::*;
 use async_std::sync::{Arc, Mutex};
 use async_std::task;
@@ -49,6 +49,12 @@ impl Command for Search {
         if let Some(paper_copy) = find_selection(&selected, &store_results) {
             if paper_copy.exists() {
                 open::that(&paper_copy.location)?;
+            } else {
+                println!(
+                    "The paper was not found at its expected location {:?}!",
+                    paper_copy.location
+                );
+                lib.remove(&paper_copy.paper);
             }
         } else {
             if let Some(paper) = find_selection(&selected, &new_results) {
@@ -72,7 +78,8 @@ impl Command for Search {
 
                         let spinner = indicatif::ProgressBar::new_spinner();
                         spinner.set_style(
-                            indicatif::ProgressStyle::default_spinner().template("{msg} {spinner:.cyan/blue} "),
+                            indicatif::ProgressStyle::default_spinner()
+                                .template("{msg} {spinner:.cyan/blue} "),
                         );
                         spinner.set_message("Downloading");
                         spinner.enable_steady_tick(10);
@@ -113,7 +120,7 @@ where
 {
     for entry in entries {
         let mut handle = handle_ref.lock().await;
-        writeln!(handle, "{}", entry).context("Could not write to stdin!")?;
+        writeln!(handle, "{}", entry);
     }
     Ok(())
 }

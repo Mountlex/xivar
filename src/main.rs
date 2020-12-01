@@ -1,14 +1,13 @@
-mod store;
-mod config;
-mod cli;
 mod arxiv;
+mod cli;
+mod config;
 mod fzf;
+mod store;
 
 use anyhow::Result;
-use cli::{Cli, Command};
 use clap::Clap;
+use cli::{Cli, Command};
 
 fn main() -> Result<()> {
     Cli::parse().run()
 }
-
