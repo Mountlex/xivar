@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<result>
+<query id="259165">nicole* megow*</query>
+<status code="200">OK</status>
+<time unit="msecs">8.82</time>
+<completions total="1" computed="1" sent="1">
+<c sc="85" dc="85" oc="85" id="25469975">megow</c>
+</completions>
+<hits total="85" computed="85" sent="85" first="0">
+<hit score="2" id="22301">
+<info><authors><author pid="d/ChristophDurr">Christoph Dürr</author><author pid="e/ThomasErlebach">Thomas Erlebach</author><author pid="40/6185">Nicole Megow</author><author pid="167/4504">Julie Meißner</author></authors><title>An Adversarial Model for Scheduling with Testing.</title><venue>Algorithmica</venue><volume>82</volume><number>12</number><pages>3630-3675</pages><year>2020</year><type>Journal Articles</type><key>journals/algorithmica/DurrEMM20</key><doi>10.1007/S00453-020-00742-2</doi><ee>https://doi.org/10.1007/s00453-020-00742-2</ee><url>https://dblp.org/rec/journals/algorithmica/DurrEMM20</url></info>
+<url>URL#22301</url>
+</hit>
+<hit score="2" id="93203">
+<info><authors><author pid="13/3479-9">Lin Chen 0009</author><author pid="230/4560">Franziska Eberle</author><author pid="40/6185">Nicole Megow</author><author pid="133/8330">Kevin Schewior</author><author pid="s/CliffordStein">Clifford Stein 0001</author></authors><title>A general framework for handling commitment in online throughput maximization.</title><venue>Math. Program.</venue><volume>183</volume><number>1</number><pages>215-247</pages><year>2020</year><type>Journal Articles</type><key>journals/mp/ChenEMSS20</key><doi>10.1007/S10107-020-01469-2</doi><ee>https://doi.org/10.1007/s10107-020-01469-2</ee><url>https://dblp.org/rec/journals/mp/ChenEMSS20</url></info>
+<url>URL#93203</url>
+</hit>
+<hit score="2" id="159909">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="248/4459">Lukas Nölke</author></authors><title>Online Minimum Cost Matching with Recourse on the Line.</title><venue>APPROX/RANDOM</venue><pages>37:1-37:16</pages><year>2020</year><type>Conference and Workshop Papers</type><key>conf/approx/MegowN20</key><doi>10.4230/LIPICS.APPROX/RANDOM.2020.37</doi><ee>https://doi.org/10.4230/LIPIcs.APPROX/RANDOM.2020.37</ee><url>https://dblp.org/rec/conf/approx/MegowN20</url></info>
+<url>URL#159909</url>
+</hit>
+<hit score="2" id="184475">
+<info><authors><author pid="230/4560">Franziska Eberle</author><author pid="40/6185">Nicole Megow</author><author pid="133/8330">Kevin Schewior</author></authors><title>Optimally Handling Commitment Issues in Online Throughput Maximization.</title><venue>ESA</venue><pages>41:1-41:15</pages><year>2020</year><type>Conference and Workshop Papers</type><key>conf/esa/EberleMS20</key><doi>10.4230/LIPICS.ESA.2020.41</doi><ee>https://doi.org/10.4230/LIPIcs.ESA.2020.41</ee><url>https://dblp.org/rec/conf/esa/EberleMS20</url></info>
+<url>URL#184475</url>
+</hit>
+<hit score="2" id="193002">
+<info><authors><author pid="153/2020">Bertrand Simon</author><author pid="26/1092">Joachim Falk</author><author pid="40/6185">Nicole Megow</author><author pid="t/JurgenTeich">Jürgen Teich</author></authors><title>Energy Minimization in DAG Scheduling on MPSoCs at Run-Time - Theory and Practice.</title><venue>NG-RES@HiPEAC</venue><pages>2:1-2:13</pages><year>2020</year><type>Conference and Workshop Papers</type><key>conf/hipeac/SimonFMT20</key><doi>10.4230/OASICS.NG-RES.2020.2</doi><ee>https://doi.org/10.4230/OASIcs.NG-RES.2020.2</ee><url>https://dblp.org/rec/conf/hipeac/SimonFMT20</url></info>
+<url>URL#193002</url>
+</hit>
+<hit score="2" id="218064">
+<info><authors><author pid="m/AlbertoMarchettiSpaccamela">Alberto Marchetti-Spaccamela</author><author pid="40/6185">Nicole Megow</author><author pid="270/3491">Jens Schlöter</author><author pid="80/2691">Martin Skutella</author><author pid="05/1060">Leen Stougie</author></authors><title>On the Complexity of Conditional DAG Scheduling in Multiprocessor Systems.</title><venue>IPDPS</venue><pages>1061-1070</pages><year>2020</year><type>Conference and Workshop Papers</type><key>conf/ipps/Marchetti-Spaccamela20</key><doi>10.1109/IPDPS47924.2020.00112</doi><ee>https://doi.org/10.1109/IPDPS47924.2020.00112</ee><url>https://dblp.org/rec/conf/ipps/Marchetti-Spaccamela20</url></info>
+<url>URL#218064</url>
+</hit>
+<hit score="2" id="227755">
+<info><authors><author pid="06/8196-1">Martin Böhm 0001</author><author pid="78/11131">Ruben Hoeksma</author><author pid="40/6185">Nicole Megow</author><author pid="248/4459">Lukas Nölke</author><author pid="153/2020">Bertrand Simon</author></authors><title>Computing a Minimum-Cost k-Hop Steiner Tree in Tree-Like Metrics.</title><venue>MFCS</venue><pages>18:1-18:15</pages><year>2020</year><type>Conference and Workshop Papers</type><key>conf/mfcs/BohmHMNS20</key><doi>10.4230/LIPICS.MFCS.2020.18</doi><ee>https://doi.org/10.4230/LIPIcs.MFCS.2020.18</ee><url>https://dblp.org/rec/conf/mfcs/BohmHMNS20</url></info>
+<url>URL#227755</url>
+</hit>
+<hit score="2" id="256016">
+<info><authors><author pid="07/3300">Evripidis Bampis</author><author pid="40/6185">Nicole Megow</author></authors><title>Approximation and Online Algorithms - 17th International Workshop, WAOA 2019, Munich, Germany, September 12-13, 2019, Revised Selected Papers</title><venue>WAOA</venue><venue>Lecture Notes in Computer Science</venue><volume>11926</volume><publisher>Springer</publisher><year>2020</year><type>Editorship</type><key>conf/waoa/2019</key><doi>10.1007/978-3-030-39479-0</doi><ee>https://doi.org/10.1007/978-3-030-39479-0</ee><url>https://dblp.org/rec/conf/waoa/2019</url></info>
+<url>URL#256016</url>
+</hit>
+<hit score="2" id="257655">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="248/4459">Lukas Nölke</author></authors><title>Online Minimum Cost Matching on the Line with Recourse.</title><venue>CoRR</venue><volume>abs/2001.03107</volume><year>2020</year><type>Informal Publications</type><key>journals/corr/abs-2001-03107</key><ee>http://arxiv.org/abs/2001.03107</ee><url>https://dblp.org/rec/journals/corr/abs-2001-03107</url></info>
+<url>URL#257655</url>
+</hit>
+<hit score="2" id="268341">
+<info><authors><author pid="06/8196-1">Martin Böhm 0001</author><author pid="78/11131">Ruben Hoeksma</author><author pid="40/6185">Nicole Megow</author><author pid="248/4459">Lukas Nölke</author><author pid="153/2020">Bertrand Simon</author></authors><title>Computing a Minimum-Cost k-hop Steiner Tree in Tree-Like Metrics.</title><venue>CoRR</venue><volume>abs/2003.05699</volume><year>2020</year><type>Informal Publications</type><key>journals/corr/abs-2003-05699</key><ee>https://arxiv.org/abs/2003.05699</ee><url>https://dblp.org/rec/journals/corr/abs-2003-05699</url></info>
+<url>URL#268341</url>
+</hit>
+<hit score="2" id="293841">
+<info><authors><author pid="06/8196-1">Martin Böhm 0001</author><author pid="230/4560">Franziska Eberle</author><author pid="40/6185">Nicole Megow</author><author pid="248/4459">Lukas Nölke</author><author pid="270/3491">Jens Schlöter</author><author pid="153/2020">Bertrand Simon</author><author pid="92/715">Andreas Wiese</author></authors><title>Fully Dynamic Algorithms for Knapsack Problems with Polylogarithmic Update Time.</title><venue>CoRR</venue><volume>abs/2007.08415</volume><year>2020</year><type>Informal Publications</type><key>journals/corr/abs-2007-08415</key><ee>https://arxiv.org/abs/2007.08415</ee><url>https://dblp.org/rec/journals/corr/abs-2007-08415</url></info>
+<url>URL#293841</url>
+</hit>
+<hit score="2" id="317506">
+<info><authors><author pid="230/4560">Franziska Eberle</author><author pid="78/11131">Ruben Hoeksma</author><author pid="40/6185">Nicole Megow</author><author pid="248/4459">Lukas Nölke</author><author pid="133/8330">Kevin Schewior</author><author pid="153/2020">Bertrand Simon</author></authors><title>Speed-Robust Scheduling.</title><venue>CoRR</venue><volume>abs/2011.05181</volume><year>2020</year><type>Informal Publications</type><key>journals/corr/abs-2011-05181</key><ee>https://arxiv.org/abs/2011.05181</ee><url>https://dblp.org/rec/journals/corr/abs-2011-05181</url></info>
+<url>URL#317506</url>
+</hit>
+<hit score="2" id="318416">
+<info><authors><author pid="e/ThomasErlebach">Thomas Erlebach</author><author pid="h/MichaelHoffmann2">Michael Hoffmann 0002</author><author pid="278/7873">Murilo S. de Lima</author><author pid="40/6185">Nicole Megow</author><author pid="270/3491">Jens Schlöter</author></authors><title>Untrusted Predictions Improve Trustable Query Policies.</title><venue>CoRR</venue><volume>abs/2011.07385</volume><year>2020</year><type>Informal Publications</type><key>journals/corr/abs-2011-07385</key><ee>https://arxiv.org/abs/2011.07385</ee><url>https://dblp.org/rec/journals/corr/abs-2011-07385</url></info>
+<url>URL#318416</url>
+</hit>
+<hit score="2" id="321552">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="s/DavidBShmoys">David B. Shmoys</author><author pid="11/6945">Ola Svensson</author></authors><title>Scheduling (Dagstuhl Seminar 20081).</title><venue>Dagstuhl Reports</venue><volume>10</volume><number>2</number><pages>50-75</pages><year>2020</year><type>Informal Publications</type><key>journals/dagstuhl-reports/MegowSS20</key><doi>10.4230/DAGREP.10.2.50</doi><ee>https://doi.org/10.4230/DagRep.10.2.50</ee><url>https://dblp.org/rec/journals/dagstuhl-reports/MegowSS20</url></info>
+<url>URL#321552</url>
+</hit>
+<hit score="2" id="432282">
+<info><authors><author pid="230/4560">Franziska Eberle</author><author pid="f/FelixAFischer">Felix A. Fischer</author><author pid="73/8685">Jannik Matuschke</author><author pid="40/6185">Nicole Megow</author></authors><title>On index policies for stochastic minsum scheduling.</title><venue>Oper. Res. Lett.</venue><volume>47</volume><number>3</number><pages>213-218</pages><year>2019</year><type>Journal Articles</type><key>journals/orl/EberleFMM19</key><doi>10.1016/J.ORL.2019.03.007</doi><ee>https://doi.org/10.1016/j.orl.2019.03.007</ee><url>https://dblp.org/rec/journals/orl/EberleFMM19</url></info>
+<url>URL#432282</url>
+</hit>
+<hit score="2" id="462526">
+<info><authors><author pid="117/7916">Fidaa Abed</author><author pid="13/3479-9">Lin Chen 0009</author><author pid="22/687">Yann Disser</author><author pid="38/7618">Martin Groß 0001</author><author pid="40/6185">Nicole Megow</author><author pid="167/4504">Julie Meißner</author><author pid="181/0889">Alexander T. Richter</author><author pid="162/8102">Roman Rischke</author></authors><title>Scheduling maintenance jobs in networks.</title><venue>Theor. Comput. Sci.</venue><volume>754</volume><pages>107-121</pages><year>2019</year><type>Journal Articles</type><key>journals/tcs/AbedCDGMMRR19</key><doi>10.1016/J.TCS.2018.02.020</doi><ee>https://doi.org/10.1016/j.tcs.2018.02.020</ee><url>https://dblp.org/rec/journals/tcs/AbedCDGMMRR19</url></info>
+<url>URL#462526</url>
+</hit>
+<hit score="2" id="525819">
+<info><authors><author pid="70/1961">Jian-Jia Chen</author><author pid="31/4193">Tobias Hahn</author><author pid="78/11131">Ruben Hoeksma</author><author pid="40/6185">Nicole Megow</author><author pid="166/7057">Georg von der Brüggen</author></authors><title>Scheduling Self-Suspending Tasks - New and Old Results.</title><venue>ECRTS</venue><pages>16:1-16:23</pages><year>2019</year><type>Conference and Workshop Papers</type><key>conf/ecrts/ChenHHMB19</key><doi>10.4230/LIPICS.ECRTS.2019.16</doi><ee>https://doi.org/10.4230/LIPIcs.ECRTS.2019.16</ee><url>https://dblp.org/rec/conf/ecrts/ChenHHMB19</url></info>
+<url>URL#525819</url>
+</hit>
+<hit score="2" id="589715">
+<info><authors><author pid="13/3479-9">Lin Chen 0009</author><author pid="230/4560">Franziska Eberle</author><author pid="40/6185">Nicole Megow</author><author pid="133/8330">Kevin Schewior</author><author pid="s/CliffordStein">Cliff Stein 0001</author></authors><title>A General Framework for Handling Commitment in Online Throughput Maximization.</title><venue>IPCO</venue><pages>141-154</pages><year>2019</year><type>Conference and Workshop Papers</type><key>conf/ipco/0009EMSS19</key><doi>10.1007/978-3-030-17953-3_11</doi><ee>https://doi.org/10.1007/978-3-030-17953-3_11</ee><url>https://dblp.org/rec/conf/ipco/0009EMSS19</url></info>
+<url>URL#589715</url>
+</hit>
+<hit score="2" id="659996">
+<info><authors><author pid="70/1961">Jian-Jia Chen</author><author pid="31/4193">Tobias Hahn</author><author pid="78/11131">Ruben Hoeksma</author><author pid="40/6185">Nicole Megow</author><author pid="166/7057">Georg von der Brüggen</author></authors><title>Scheduling Self-Suspending Tasks - New and Old Results (Artifact).</title><venue>Dagstuhl Artifacts Ser.</venue><volume>5</volume><number>1</number><pages>06:1-06:3</pages><year>2019</year><type>Data and Artifacts</type><key>journals/darts/ChenHHMB19</key><doi>10.4230/DARTS.5.1.6</doi><ee>https://doi.org/10.4230/DARTS.5.1.6</ee><url>https://dblp.org/rec/journals/darts/ChenHHMB19</url></info>
+<url>URL#659996</url>
+</hit>
+<hit score="2" id="713452">
+<info><authors><author pid="153/2020">Bertrand Simon</author><author pid="26/1092">Joachim Falk</author><author pid="40/6185">Nicole Megow</author><author pid="t/JurgenTeich">Jürgen Teich</author></authors><title>Energy Minimization in DAG Scheduling on MPSoCs at Run-Time - Theory and Practice.</title><venue>CoRR</venue><volume>abs/1912.09170</volume><year>2019</year><type>Informal Publications</type><key>journals/corr/abs-1912-09170</key><ee>http://arxiv.org/abs/1912.09170</ee><url>https://dblp.org/rec/journals/corr/abs-1912-09170</url></info>
+<url>URL#713452</url>
+</hit>
+<hit score="2" id="713969">
+<info><authors><author pid="230/4560">Franziska Eberle</author><author pid="40/6185">Nicole Megow</author><author pid="133/8330">Kevin Schewior</author></authors><title>Optimally handling commitment issues in online throughput maximization.</title><venue>CoRR</venue><volume>abs/1912.10769</volume><year>2019</year><type>Informal Publications</type><key>journals/corr/abs-1912-10769</key><ee>http://arxiv.org/abs/1912.10769</ee><url>https://dblp.org/rec/journals/corr/abs-1912-10769</url></info>
+<url>URL#713969</url>
+</hit>
+<hit score="2" id="829853">
+<info><authors><author pid="13/3479-9">Lin Chen 0009</author><author pid="40/6185">Nicole Megow</author><author pid="133/8330">Kevin Schewior</author></authors><title>An O(log m)-Competitive Algorithm for Online Machine Minimization.</title><venue>SIAM J. Comput.</venue><volume>47</volume><number>6</number><pages>2057-2077</pages><year>2018</year><type>Journal Articles</type><key>journals/siamcomp/0009MS18</key><doi>10.1137/17M116032X</doi><ee>https://doi.org/10.1137/17M116032X</ee><url>https://dblp.org/rec/journals/siamcomp/0009MS18</url></info>
+<url>URL#829853</url>
+</hit>
+<hit score="2" id="830058">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="86/7248">José Verschae</author></authors><title>Dual Techniques for Scheduling on a Machine with Varying Speed.</title><venue>SIAM J. Discret. Math.</venue><volume>32</volume><number>3</number><pages>1541-1571</pages><year>2018</year><type>Journal Articles</type><key>journals/siamdm/MegowV18</key><doi>10.1137/16M105589X</doi><ee>https://doi.org/10.1137/16M105589X</ee><url>https://dblp.org/rec/journals/siamdm/MegowV18</url></info>
+<url>URL#830058</url>
+</hit>
+<hit score="2" id="959427">
+<info><authors><author pid="d/ChristophDurr">Christoph Dürr</author><author pid="e/ThomasErlebach">Thomas Erlebach</author><author pid="40/6185">Nicole Megow</author><author pid="167/4504">Julie Meißner</author></authors><title>Scheduling with Explorable Uncertainty.</title><venue>ITCS</venue><pages>30:1-30:14</pages><year>2018</year><type>Conference and Workshop Papers</type><key>conf/innovations/DurrEMM18</key><doi>10.4230/LIPICS.ITCS.2018.30</doi><ee>https://doi.org/10.4230/LIPIcs.ITCS.2018.30</ee><url>https://dblp.org/rec/conf/innovations/DurrEMM18</url></info>
+<url>URL#959427</url>
+</hit>
+<hit score="2" id="1069279">
+<info><authors><author pid="13/3479-9">Lin Chen 0009</author><author pid="230/4560">Franziska Eberle</author><author pid="40/6185">Nicole Megow</author><author pid="133/8330">Kevin Schewior</author><author pid="s/CliffordStein">Cliff Stein 0001</author></authors><title>A general framework for handling commitment in online throughput maximization.</title><venue>CoRR</venue><volume>abs/1811.08238</volume><year>2018</year><type>Informal Publications</type><key>journals/corr/abs-1811-08238</key><ee>http://arxiv.org/abs/1811.08238</ee><url>https://dblp.org/rec/journals/corr/abs-1811-08238</url></info>
+<url>URL#1069279</url>
+</hit>
+<hit score="2" id="1070651">
+<info><authors><author pid="13/3479-9">Lin Chen 0009</author><author pid="40/6185">Nicole Megow</author><author pid="162/8102">Roman Rischke</author><author pid="05/1060">Leen Stougie</author><author pid="86/7248">José Verschae</author></authors><title>Optimal Algorithms for Scheduling under Time-of-Use Tariffs.</title><venue>CoRR</venue><volume>abs/1811.12657</volume><year>2018</year><type>Informal Publications</type><key>journals/corr/abs-1811-12657</key><ee>http://arxiv.org/abs/1811.12657</ee><url>https://dblp.org/rec/journals/corr/abs-1811-12657</url></info>
+<url>URL#1070651</url>
+</hit>
+<hit score="2" id="1074213">
+<info><authors><author pid="h/MMHalldorsson">Magnús M. Halldórsson</author><author pid="40/6185">Nicole Megow</author><author pid="s/CliffordStein">Clifford Stein 0001</author></authors><title>Scheduling (Dagstuhl Seminar 18101).</title><venue>Dagstuhl Reports</venue><volume>8</volume><number>3</number><pages>1-20</pages><year>2018</year><type>Informal Publications</type><key>journals/dagstuhl-reports/HalldorssonMS18</key><doi>10.4230/DAGREP.8.3.1</doi><ee>https://doi.org/10.4230/DagRep.8.3.1</ee><url>https://dblp.org/rec/journals/dagstuhl-reports/HalldorssonMS18</url></info>
+<url>URL#1074213</url>
+</hit>
+<hit score="2" id="1177081">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="167/4504">Julie Meißner</author><author pid="80/2691">Martin Skutella</author></authors><title>Randomization Helps Computing a Minimum Spanning Tree under Uncertainty.</title><venue>SIAM J. Comput.</venue><volume>46</volume><number>4</number><pages>1217-1240</pages><year>2017</year><type>Journal Articles</type><key>journals/siamcomp/MegowMS17</key><doi>10.1137/16M1088375</doi><ee>https://doi.org/10.1137/16M1088375</ee><url>https://dblp.org/rec/journals/siamcomp/MegowMS17</url></info>
+<url>URL#1177081</url>
+</hit>
+<hit score="2" id="1177141">
+<info><authors><author pid="22/687">Yann Disser</author><author pid="56/7413">Max Klimm</author><author pid="40/6185">Nicole Megow</author><author pid="93/3264">Sebastian Stiller</author></authors><title>Packing a Knapsack of Unknown Capacity.</title><venue>SIAM J. Discret. Math.</venue><volume>31</volume><number>3</number><pages>1477-1497</pages><year>2017</year><type>Journal Articles</type><key>journals/siamdm/DisserKMS17</key><doi>10.1137/16M1070049</doi><ee>https://doi.org/10.1137/16M1070049</ee><url>https://dblp.org/rec/journals/siamdm/DisserKMS17</url></info>
+<url>URL#1177141</url>
+</hit>
+<hit score="2" id="1230377">
+<info><authors><author pid="117/7916">Fidaa Abed</author><author pid="13/3479-9">Lin Chen 0009</author><author pid="22/687">Yann Disser</author><author pid="38/7618">Martin Groß 0001</author><author pid="40/6185">Nicole Megow</author><author pid="167/4504">Julie Meißner</author><author pid="181/0889">Alexander T. Richter</author><author pid="162/8102">Roman Rischke</author></authors><title>Scheduling Maintenance Jobs in Networks.</title><venue>CIAC</venue><pages>19-30</pages><year>2017</year><type>Conference and Workshop Papers</type><key>conf/ciac/Abed0DGMMRR17</key><doi>10.1007/978-3-319-57586-5_3</doi><ee>https://doi.org/10.1007/978-3-319-57586-5_3</ee><url>https://dblp.org/rec/conf/ciac/Abed0DGMMRR17</url></info>
+<url>URL#1230377</url>
+</hit>
+<hit score="2" id="1360205">
+<info><authors><author pid="202/1955">Jacob Focke</author><author pid="40/6185">Nicole Megow</author><author pid="167/4504">Julie Meißner</author></authors><title>Minimum Spanning Tree under Explorable Uncertainty in Theory and Experiments.</title><venue>SEA</venue><pages>22:1-22:14</pages><year>2017</year><type>Conference and Workshop Papers</type><key>conf/wea/FockeMM17</key><doi>10.4230/LIPICS.SEA.2017.22</doi><ee>https://doi.org/10.4230/LIPIcs.SEA.2017.22</ee><url>https://dblp.org/rec/conf/wea/FockeMM17</url></info>
+<url>URL#1360205</url>
+</hit>
+<hit score="2" id="1371751">
+<info><authors><author pid="117/7916">Fidaa Abed</author><author pid="13/3479-9">Lin Chen 0009</author><author pid="22/687">Yann Disser</author><author pid="38/7618">Martin Groß 0001</author><author pid="40/6185">Nicole Megow</author><author pid="167/4504">Julie Meißner</author><author pid="181/0889">Alexander T. Richter</author><author pid="162/8102">Roman Rischke</author></authors><title>Scheduling Maintenance Jobs in Networks.</title><venue>CoRR</venue><volume>abs/1701.08809</volume><year>2017</year><type>Informal Publications</type><key>journals/corr/Abed0DGMMRR17</key><ee>http://arxiv.org/abs/1701.08809</ee><url>https://dblp.org/rec/journals/corr/Abed0DGMMRR17</url></info>
+<url>URL#1371751</url>
+</hit>
+<hit score="2" id="1391601">
+<info><authors><author pid="d/ChristophDurr">Christoph Dürr</author><author pid="e/ThomasErlebach">Thomas Erlebach</author><author pid="40/6185">Nicole Megow</author><author pid="167/4504">Julie Meißner</author></authors><title>Scheduling with Explorable Uncertainty.</title><venue>CoRR</venue><volume>abs/1709.02592</volume><year>2017</year><type>Informal Publications</type><key>journals/corr/abs-1709-02592</key><ee>http://arxiv.org/abs/1709.02592</ee><url>https://dblp.org/rec/journals/corr/abs-1709-02592</url></info>
+<url>URL#1391601</url>
+</hit>
+<hit score="2" id="1498306">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="80/2691">Martin Skutella</author><author pid="86/7248">José Verschae</author><author pid="92/715">Andreas Wiese</author></authors><title>The Power of Recourse for Online MST and TSP.</title><venue>SIAM J. Comput.</venue><volume>45</volume><number>3</number><pages>859-880</pages><year>2016</year><type>Journal Articles</type><key>journals/siamcomp/MegowSVW16</key><doi>10.1137/130917703</doi><ee>https://doi.org/10.1137/130917703</ee><url>https://dblp.org/rec/journals/siamcomp/MegowSVW16</url></info>
+<url>URL#1498306</url>
+</hit>
+<hit score="2" id="1504659">
+<info><authors><author pid="162/0180">Elisabeth Lübbecke</author><author pid="34/10085">Olaf Maurer</author><author pid="40/6185">Nicole Megow</author><author pid="92/715">Andreas Wiese</author></authors><title>A New Approach to Online Scheduling - Approximating the Optimal Competitive Ratio.</title><venue>ACM Trans. Algorithms</venue><volume>13</volume><number>1</number><pages>15:1-15:34</pages><year>2016</year><type>Journal Articles</type><key>journals/talg/LubbeckeMMW16</key><doi>10.1145/2996800</doi><ee>https://doi.org/10.1145/2996800</ee><url>https://dblp.org/rec/journals/talg/LubbeckeMMW16</url></info>
+<url>URL#1504659</url>
+</hit>
+<hit score="2" id="1515021">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="79/7019">Mary Wootters</author></authors><title>Special Issue - APPROX-RANDOM 2015 - Guest Editors&apos; Foreword.</title><venue>Theory Comput.</venue><volume>12</volume><number>1</number><pages>1-3</pages><year>2016</year><type>Journal Articles</type><key>journals/toc/MegowW16</key><doi>10.4086/TOC.2016.V012A013</doi><ee>https://doi.org/10.4086/toc.2016.v012a013</ee><url>https://dblp.org/rec/journals/toc/MegowW16</url></info>
+<url>URL#1515021</url>
+</hit>
+<hit score="2" id="1661996">
+<info><authors><author pid="13/3479-9">Lin Chen 0009</author><author pid="40/6185">Nicole Megow</author><author pid="133/8330">Kevin Schewior</author></authors><title>An O(log m)-Competitive Algorithm for Online Machine Minimization.</title><venue>SODA</venue><pages>155-163</pages><year>2016</year><type>Conference and Workshop Papers</type><key>conf/soda/ChenMS16</key><doi>10.1137/1.9781611974331.CH12</doi><ee>https://doi.org/10.1137/1.9781611974331.ch12</ee><url>https://dblp.org/rec/conf/soda/ChenMS16</url></info>
+<url>URL#1661996</url>
+</hit>
+<hit score="2" id="1662734">
+<info><authors><author pid="13/3479-9">Lin Chen 0009</author><author pid="40/6185">Nicole Megow</author><author pid="133/8330">Kevin Schewior</author></authors><title>The Power of Migration in Online Machine Minimization.</title><venue>SPAA</venue><pages>175-184</pages><year>2016</year><type>Conference and Workshop Papers</type><key>conf/spaa/0009MS16</key><doi>10.1145/2935764.2935786</doi><ee>https://doi.org/10.1145/2935764.2935786</ee><url>https://dblp.org/rec/conf/spaa/0009MS16</url></info>
+<url>URL#1662734</url>
+</hit>
+<hit score="2" id="1683485">
+<info><authors><author pid="75/78">Julián Mestre</author><author pid="40/6185">Nicole Megow</author></authors><title>Universal Sequencing on an Unreliable Machine.</title><venue>Encyclopedia of Algorithms</venue><pages>2304-2308</pages><year>2016</year><type>Reference Works</type><key>reference/algo/MestreM16</key><doi>10.1007/978-1-4939-2864-4_543</doi><ee>https://doi.org/10.1007/978-1-4939-2864-4_543</ee><url>https://dblp.org/rec/reference/algo/MestreM16</url></info>
+<url>URL#1683485</url>
+</hit>
+<hit score="2" id="1707167">
+<info><authors><author pid="69/5601">Nikhil Bansal</author><author pid="40/6185">Nicole Megow</author><author pid="s/CliffordStein">Clifford Stein 0001</author></authors><title>Scheduling (Dagstuhl Seminar 16081).</title><venue>Dagstuhl Reports</venue><volume>6</volume><number>2</number><pages>97-118</pages><year>2016</year><type>Informal Publications</type><key>journals/dagstuhl-reports/BansalMS16</key><doi>10.4230/DAGREP.6.2.97</doi><ee>https://doi.org/10.4230/DagRep.6.2.97</ee><url>https://dblp.org/rec/journals/dagstuhl-reports/BansalMS16</url></info>
+<url>URL#1707167</url>
+</hit>
+<hit score="2" id="1737306">
+<info><authors><author pid="98/1125">José R. Correa</author><author pid="40/6185">Nicole Megow</author></authors><title>Clique partitioning with value-monotone submodular cost.</title><venue>Discret. Optim.</venue><volume>15</volume><pages>26-36</pages><year>2015</year><type>Journal Articles</type><key>journals/disopt/CorreaM15</key><doi>10.1016/J.DISOPT.2014.11.001</doi><ee>https://doi.org/10.1016/j.disopt.2014.11.001</ee><url>https://dblp.org/rec/journals/disopt/CorreaM15</url></info>
+<url>URL#1737306</url>
+</hit>
+<hit score="2" id="1833369">
+<info><authors><author pid="13/3479-9">Lin Chen 0009</author><author pid="40/6185">Nicole Megow</author><author pid="162/8102">Roman Rischke</author><author pid="05/1060">Leen Stougie</author></authors><title>Stochastic and Robust Scheduling in the Cloud.</title><venue>APPROX-RANDOM</venue><pages>175-186</pages><year>2015</year><type>Conference and Workshop Papers</type><key>conf/approx/ChenMRS15</key><doi>10.4230/LIPICS.APPROX-RANDOM.2015.175</doi><ee>https://doi.org/10.4230/LIPIcs.APPROX-RANDOM.2015.175</ee><url>https://dblp.org/rec/conf/approx/ChenMRS15</url></info>
+<url>URL#1833369</url>
+</hit>
+<hit score="2" id="1866419">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="167/4504">Julie Meißner</author><author pid="80/2691">Martin Skutella</author></authors><title>Randomization Helps Computing a Minimum Spanning Tree under Uncertainty.</title><venue>ESA</venue><pages>878-890</pages><year>2015</year><type>Conference and Workshop Papers</type><key>conf/esa/MegowMS15</key><doi>10.1007/978-3-662-48350-3_73</doi><ee>https://doi.org/10.1007/978-3-662-48350-3_73</ee><url>https://dblp.org/rec/conf/esa/MegowMS15</url></info>
+<url>URL#1866419</url>
+</hit>
+<hit score="2" id="1936005">
+<info><authors><author pid="13/3479-9">Lin Chen 0009</author><author pid="40/6185">Nicole Megow</author><author pid="162/8102">Roman Rischke</author><author pid="05/1060">Leen Stougie</author><author pid="86/7248">José Verschae</author></authors><title>Optimal Algorithms and a PTAS for Cost-Aware Scheduling.</title><venue>MFCS</venue><pages>211-222</pages><year>2015</year><type>Conference and Workshop Papers</type><key>conf/mfcs/ChenMRSV15</key><doi>10.1007/978-3-662-48054-0_18</doi><ee>https://doi.org/10.1007/978-3-662-48054-0_18</ee><url>https://dblp.org/rec/conf/mfcs/ChenMRSV15</url></info>
+<url>URL#1936005</url>
+</hit>
+<hit score="2" id="1979319">
+<info><authors><author pid="40/6185">Nicole Megow</author></authors><title>Robustness and Approximation for Universal Sequencing.</title><venue>Gems of Combinatorial Optimization and Graph Algorithms</venue><pages>133-141</pages><year>2015</year><type>Parts in Books or Collections</type><key>books/sp/15/Megow15</key><doi>10.1007/978-3-319-24971-1_13</doi><ee>https://doi.org/10.1007/978-3-319-24971-1_13</ee><url>https://dblp.org/rec/books/sp/15/Megow15</url></info>
+<url>URL#1979319</url>
+</hit>
+<hit score="2" id="1987787">
+<info><authors><author pid="13/3479-9">Lin Chen 0009</author><author pid="40/6185">Nicole Megow</author><author pid="133/8330">Kevin Schewior</author></authors><title>An O(m2 log m)-Competitive Algorithm for Online Machine Minimization.</title><venue>CoRR</venue><volume>abs/1506.05721</volume><year>2015</year><type>Informal Publications</type><key>journals/corr/ChenMS15a</key><ee>http://arxiv.org/abs/1506.05721</ee><url>https://dblp.org/rec/journals/corr/ChenMS15a</url></info>
+<url>URL#1987787</url>
+</hit>
+<hit score="2" id="2063183">
+<info><authors><author pid="83/8412">Elisabeth Günther</author><author pid="14/4275">Felix G. König</author><author pid="40/6185">Nicole Megow</author></authors><title>Scheduling and packing malleable and parallel tasks with precedence constraints of bounded width.</title><venue>J. Comb. Optim.</venue><volume>27</volume><number>1</number><pages>164-181</pages><year>2014</year><type>Journal Articles</type><key>journals/jco/GuntherKM14</key><doi>10.1007/S10878-012-9498-3</doi><ee>https://doi.org/10.1007/s10878-012-9498-3</ee><url>https://dblp.org/rec/journals/jco/GuntherKM14</url></info>
+<url>URL#2063183</url>
+</hit>
+<hit score="2" id="2078134">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="05/846">Tjark Vredeveld</author></authors><title>A Tight 2-Approximation for Preemptive Stochastic Scheduling.</title><venue>Math. Oper. Res.</venue><volume>39</volume><number>4</number><pages>1297-1310</pages><year>2014</year><type>Journal Articles</type><key>journals/mor/MegowV14</key><doi>10.1287/MOOR.2014.0653</doi><ee>https://doi.org/10.1287/moor.2014.0653</ee><url>https://dblp.org/rec/journals/mor/MegowV14</url></info>
+<url>URL#2078134</url>
+</hit>
+<hit score="2" id="2251884">
+<info><authors><author pid="22/687">Yann Disser</author><author pid="56/7413">Max Klimm</author><author pid="40/6185">Nicole Megow</author><author pid="93/3264">Sebastian Stiller</author></authors><title>Packing a Knapsack of Unknown Capacity.</title><venue>STACS</venue><pages>276-287</pages><year>2014</year><type>Conference and Workshop Papers</type><key>conf/stacs/DisserKMS14</key><doi>10.4230/LIPICS.STACS.2014.276</doi><ee>https://doi.org/10.4230/LIPIcs.STACS.2014.276</ee><url>https://dblp.org/rec/conf/stacs/DisserKMS14</url></info>
+<url>URL#2251884</url>
+</hit>
+<hit score="2" id="2275957">
+<info><authors><author pid="13/3479-9">Lin Chen 0009</author><author pid="40/6185">Nicole Megow</author><author pid="133/8330">Kevin Schewior</author></authors><title>New Results on Online Resource Minimization.</title><venue>CoRR</venue><volume>abs/1407.7998</volume><year>2014</year><type>Informal Publications</type><key>journals/corr/ChenMMS14</key><ee>http://arxiv.org/abs/1407.7998</ee><url>https://dblp.org/rec/journals/corr/ChenMMS14</url></info>
+<url>URL#2275957</url>
+</hit>
+<hit score="2" id="2456556">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="86/7248">José Verschae</author></authors><title>Dual Techniques for Scheduling on a Machine with Varying Speed.</title><venue>ICALP</venue><pages>745-756</pages><year>2013</year><type>Conference and Workshop Papers</type><key>conf/icalp/MegowV13</key><doi>10.1007/978-3-642-39206-1_63</doi><ee>https://doi.org/10.1007/978-3-642-39206-1_63</ee><url>https://dblp.org/rec/conf/icalp/MegowV13</url></info>
+<url>URL#2456556</url>
+</hit>
+<hit score="2" id="2486098">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="75/78">Julián Mestre</author></authors><title>Instance-sensitive robustness guarantees for sequencing with unknown packing and covering constraints.</title><venue>ITCS</venue><pages>495-504</pages><year>2013</year><type>Conference and Workshop Papers</type><key>conf/innovations/MegowM13</key><doi>10.1145/2422436.2422490</doi><ee>https://doi.org/10.1145/2422436.2422490</ee><url>https://dblp.org/rec/conf/innovations/MegowM13</url></info>
+<url>URL#2486098</url>
+</hit>
+<hit score="2" id="2519670">
+<info><authors><author pid="89/3843">Vincenzo Bonifaci</author><author pid="m/AlbertoMarchettiSpaccamela">Alberto Marchetti-Spaccamela</author><author pid="40/6185">Nicole Megow</author><author pid="92/715">Andreas Wiese</author></authors><title>Polynomial-Time Exact Schedulability Tests for Harmonic Real-Time Tasks.</title><venue>RTSS</venue><pages>236-245</pages><year>2013</year><type>Conference and Workshop Papers</type><key>conf/rtss/BonifaciMMW13</key><doi>10.1109/RTSS.2013.31</doi><ee>https://doi.org/10.1109/RTSS.2013.31</ee><url>https://dblp.org/rec/conf/rtss/BonifaciMMW13</url></info>
+<url>URL#2519670</url>
+</hit>
+<hit score="2" id="2529137">
+<info><authors><author pid="83/8412">Elisabeth Günther</author><author pid="34/10085">Olaf Maurer</author><author pid="40/6185">Nicole Megow</author><author pid="92/715">Andreas Wiese</author></authors><title>A New Approach to Online Scheduling - Approximating the Optimal Competitive Ratio.</title><venue>SODA</venue><pages>118-128</pages><year>2013</year><type>Conference and Workshop Papers</type><key>conf/soda/GuntherMMW13</key><doi>10.1137/1.9781611973105.9</doi><ee>https://doi.org/10.1137/1.9781611973105.9</ee><url>https://dblp.org/rec/conf/soda/GuntherMMW13</url></info>
+<url>URL#2529137</url>
+</hit>
+<hit score="2" id="2551908">
+<info><authors><author pid="22/687">Yann Disser</author><author pid="56/7413">Max Klimm</author><author pid="40/6185">Nicole Megow</author><author pid="93/3264">Sebastian Stiller</author></authors><title>Packing a Knapsack of Unknown Capacity.</title><venue>CoRR</venue><volume>abs/1307.2806</volume><year>2013</year><type>Informal Publications</type><key>journals/corr/DisserKMS13</key><ee>http://arxiv.org/abs/1307.2806</ee><url>https://dblp.org/rec/journals/corr/DisserKMS13</url></info>
+<url>URL#2551908</url>
+</hit>
+<hit score="2" id="2560652">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="92/715">Andreas Wiese</author></authors><title>Competitive-Ratio Approximation Schemes for Minimizing the Makespan in the Online-List Model</title><venue>CoRR</venue><volume>abs/1303.1912</volume><year>2013</year><type>Informal Publications</type><key>journals/corr/abs-1303-1912</key><ee>http://arxiv.org/abs/1303.1912</ee><url>https://dblp.org/rec/journals/corr/abs-1303-1912</url></info>
+<url>URL#2560652</url>
+</hit>
+<hit score="2" id="2641956">
+<info><authors><author pid="61/9474">Wiebke Höhn</author><author pid="06/2124">Tobias Jacobs</author><author pid="40/6185">Nicole Megow</author></authors><title>On Eulerian extensions and their application to no-wait flowshop scheduling.</title><venue>J. Sched.</venue><volume>15</volume><number>3</number><pages>295-309</pages><year>2012</year><type>Journal Articles</type><key>journals/scheduling/HohnJM12</key><doi>10.1007/S10951-011-0241-1</doi><ee>https://doi.org/10.1007/s10951-011-0241-1</ee><url>https://dblp.org/rec/journals/scheduling/HohnJM12</url></info>
+<url>URL#2641956</url>
+</hit>
+<hit score="2" id="2644254">
+<info><authors><author pid="e/LeahEpstein">Leah Epstein</author><author pid="28/6051">Asaf Levin</author><author pid="m/AlbertoMarchettiSpaccamela">Alberto Marchetti-Spaccamela</author><author pid="40/6185">Nicole Megow</author><author pid="75/78">Julián Mestre</author><author pid="80/2691">Martin Skutella</author><author pid="05/1060">Leen Stougie</author></authors><title>Universal Sequencing on an Unreliable Machine.</title><venue>SIAM J. Comput.</venue><volume>41</volume><number>3</number><pages>565-586</pages><year>2012</year><type>Journal Articles</type><key>journals/siamcomp/EpsteinLMMMSS12</key><doi>10.1137/110844210</doi><ee>https://doi.org/10.1137/110844210</ee><url>https://dblp.org/rec/journals/siamcomp/EpsteinLMMMSS12</url></info>
+<url>URL#2644254</url>
+</hit>
+<hit score="2" id="2649224">
+<info><authors><author pid="89/3843">Vincenzo Bonifaci</author><author pid="01/4055">Ho-Leung Chan</author><author pid="m/AlbertoMarchettiSpaccamela">Alberto Marchetti-Spaccamela</author><author pid="40/6185">Nicole Megow</author></authors><title>Algorithms and complexity for periodic real-time scheduling.</title><venue>ACM Trans. Algorithms</venue><volume>9</volume><number>1</number><pages>6:1-6:19</pages><year>2012</year><type>Journal Articles</type><key>journals/talg/BonifaciCMM12</key><doi>10.1145/2390176.2390182</doi><ee>https://doi.org/10.1145/2390176.2390182</ee><url>https://dblp.org/rec/journals/talg/BonifaciCMM12</url></info>
+<url>URL#2649224</url>
+</hit>
+<hit score="2" id="2650345">
+<info><authors><author pid="b/SKBaruah">Sanjoy K. Baruah</author><author pid="89/3843">Vincenzo Bonifaci</author><author pid="66/465">Gianlorenzo D&apos;Angelo</author><author pid="72/8187">Haohan Li</author><author pid="m/AlbertoMarchettiSpaccamela">Alberto Marchetti-Spaccamela</author><author pid="40/6185">Nicole Megow</author><author pid="05/1060">Leen Stougie</author></authors><title>Scheduling Real-Time Mixed-Criticality Jobs.</title><venue>IEEE Trans. Computers</venue><volume>61</volume><number>8</number><pages>1140-1152</pages><year>2012</year><type>Journal Articles</type><key>journals/tc/BaruahBDLMMS12</key><doi>10.1109/TC.2011.142</doi><ee>https://doi.org/10.1109/TC.2011.142</ee><url>https://dblp.org/rec/journals/tc/BaruahBDLMMS12</url></info>
+<url>URL#2650345</url>
+</hit>
+<hit score="2" id="2652078">
+<info><authors><author pid="01/4055">Ho-Leung Chan</author><author pid="40/6185">Nicole Megow</author><author pid="s/ReneSitters">René Sitters</author><author pid="10/4553">Rob van Stee</author></authors><title>A note on sorting buffers offline.</title><venue>Theor. Comput. Sci.</venue><volume>423</volume><pages>11-18</pages><year>2012</year><type>Journal Articles</type><key>journals/tcs/ChanMSS12</key><doi>10.1016/J.TCS.2011.12.077</doi><ee>https://doi.org/10.1016/j.tcs.2011.12.077</ee><url>https://dblp.org/rec/journals/tcs/ChanMSS12</url></info>
+<url>URL#2652078</url>
+</hit>
+<hit score="2" id="2652314">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="m/KurtMehlhorn">Kurt Mehlhorn</author><author pid="02/4742">Pascal Schweitzer</author></authors><title>Online graph exploration - New results on old and new algorithms.</title><venue>Theor. Comput. Sci.</venue><volume>463</volume><pages>62-72</pages><year>2012</year><type>Journal Articles</type><key>journals/tcs/MegowMS12</key><doi>10.1016/J.TCS.2012.06.034</doi><ee>https://doi.org/10.1016/j.tcs.2012.06.034</ee><url>https://dblp.org/rec/journals/tcs/MegowMS12</url></info>
+<url>URL#2652314</url>
+</hit>
+<hit score="2" id="2719502">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="80/2691">Martin Skutella</author><author pid="86/7248">José Verschae</author><author pid="92/715">Andreas Wiese</author></authors><title>The Power of Recourse for Online MST and TSP.</title><venue>ICALP</venue><pages>689-700</pages><year>2012</year><type>Conference and Workshop Papers</type><key>conf/icalp/MegowSVW12</key><doi>10.1007/978-3-642-31594-7_58</doi><ee>https://doi.org/10.1007/978-3-642-31594-7_58</ee><url>https://dblp.org/rec/conf/icalp/MegowSVW12</url></info>
+<url>URL#2719502</url>
+</hit>
+<hit score="2" id="2814207">
+<info><authors><author pid="83/8412">Elisabeth Günther</author><author pid="34/10085">Olaf Maurer</author><author pid="40/6185">Nicole Megow</author><author pid="92/715">Andreas Wiese</author></authors><title>A New Approach to Online Scheduling - Approximating the Optimal Competitive Ratio</title><venue>CoRR</venue><volume>abs/1204.0897</volume><year>2012</year><type>Informal Publications</type><key>journals/corr/abs-1204-0897</key><ee>http://arxiv.org/abs/1204.0897</ee><url>https://dblp.org/rec/journals/corr/abs-1204-0897</url></info>
+<url>URL#2814207</url>
+</hit>
+<hit score="2" id="2821751">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="86/7248">José Verschae</author></authors><title>Scheduling on a machine with varying speed - Minimizing cost and energy via dual schedules</title><venue>CoRR</venue><volume>abs/1211.6216</volume><year>2012</year><type>Informal Publications</type><key>journals/corr/abs-1211-6216</key><ee>http://arxiv.org/abs/1211.6216</ee><url>https://dblp.org/rec/journals/corr/abs-1211-6216</url></info>
+<url>URL#2821751</url>
+</hit>
+<hit score="2" id="2868768">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="m/RHMohring">Rolf H. Möhring</author><author pid="16/1595">Jens Schulz</author></authors><title>Decision Support and Optimization in Shutdown and Turnaround Scheduling.</title><venue>INFORMS J. Comput.</venue><volume>23</volume><number>2</number><pages>189-204</pages><year>2011</year><type>Journal Articles</type><key>journals/informs/MegowMS11</key><doi>10.1287/IJOC.1100.0393</doi><ee>https://doi.org/10.1287/ijoc.1100.0393</ee><url>https://dblp.org/rec/journals/informs/MegowMS11</url></info>
+<url>URL#2868768</url>
+</hit>
+<hit score="2" id="2972173">
+<info><authors><author pid="00/3546-2">S. Anand 0002</author><author pid="g/NaveenGarg">Naveen Garg 0001</author><author pid="40/6185">Nicole Megow</author></authors><title>Meeting Deadlines - How Much Speed Suffices?</title><venue>ICALP</venue><pages>232-243</pages><year>2011</year><type>Conference and Workshop Papers</type><key>conf/icalp/AnandGM11</key><doi>10.1007/978-3-642-22006-7_20</doi><ee>https://doi.org/10.1007/978-3-642-22006-7_20</ee><url>https://dblp.org/rec/conf/icalp/AnandGM11</url></info>
+<url>URL#2972173</url>
+</hit>
+<hit score="2" id="2972265">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="m/KurtMehlhorn">Kurt Mehlhorn</author><author pid="02/4742">Pascal Schweitzer</author></authors><title>Online Graph Exploration - New Results on Old and New Algorithms.</title><venue>ICALP</venue><pages>478-489</pages><year>2011</year><type>Conference and Workshop Papers</type><key>conf/icalp/MegowMS11</key><doi>10.1007/978-3-642-22012-8_38</doi><ee>https://doi.org/10.1007/978-3-642-22012-8_38</ee><url>https://dblp.org/rec/conf/icalp/MegowMS11</url></info>
+<url>URL#2972265</url>
+</hit>
+<hit score="2" id="3229989">
+<info><authors><author pid="e/LeahEpstein">Leah Epstein</author><author pid="28/6051">Asaf Levin</author><author pid="m/AlbertoMarchettiSpaccamela">Alberto Marchetti-Spaccamela</author><author pid="40/6185">Nicole Megow</author><author pid="75/78">Julián Mestre</author><author pid="80/2691">Martin Skutella</author><author pid="05/1060">Leen Stougie</author></authors><title>Universal Sequencing on a Single Machine.</title><venue>IPCO</venue><pages>230-243</pages><year>2010</year><type>Conference and Workshop Papers</type><key>conf/ipco/EpsteinLMMMSS10</key><doi>10.1007/978-3-642-13036-6_18</doi><ee>https://doi.org/10.1007/978-3-642-13036-6_18</ee><url>https://dblp.org/rec/conf/ipco/EpsteinLMMMSS10</url></info>
+<url>URL#3229989</url>
+</hit>
+<hit score="2" id="3245577">
+<info><authors><author pid="b/SKBaruah">Sanjoy K. Baruah</author><author pid="89/3843">Vincenzo Bonifaci</author><author pid="66/465">Gianlorenzo D&apos;Angelo</author><author pid="72/8187">Haohan Li</author><author pid="m/AlbertoMarchettiSpaccamela">Alberto Marchetti-Spaccamela</author><author pid="40/6185">Nicole Megow</author><author pid="05/1060">Leen Stougie</author></authors><title>Scheduling Real-Time Mixed-Criticality Jobs.</title><venue>MFCS</venue><pages>90-101</pages><year>2010</year><type>Conference and Workshop Papers</type><key>conf/mfcs/BaruahBDLMMS10</key><doi>10.1007/978-3-642-15155-2_10</doi><ee>https://doi.org/10.1007/978-3-642-15155-2_10</ee><url>https://dblp.org/rec/conf/mfcs/BaruahBDLMMS10</url></info>
+<url>URL#3245577</url>
+</hit>
+<hit score="2" id="3266741">
+<info><authors><author pid="89/3843">Vincenzo Bonifaci</author><author pid="01/4055">Ho-Leung Chan</author><author pid="m/AlbertoMarchettiSpaccamela">Alberto Marchetti-Spaccamela</author><author pid="40/6185">Nicole Megow</author></authors><title>Algorithms and Complexity for Periodic Real-Time Scheduling.</title><venue>SODA</venue><pages>1350-1359</pages><year>2010</year><type>Conference and Workshop Papers</type><key>conf/soda/BonifaciCMM10</key><doi>10.1137/1.9781611973075.109</doi><ee>https://doi.org/10.1137/1.9781611973075.109</ee><url>https://dblp.org/rec/conf/soda/BonifaciCMM10</url></info>
+<url>URL#3266741</url>
+</hit>
+<hit score="2" id="3290654">
+<info><authors><author pid="01/4055">Ho-Leung Chan</author><author pid="40/6185">Nicole Megow</author><author pid="10/4553">Rob van Stee</author><author pid="s/ReneSitters">René Sitters</author></authors><title>The Sorting Buffer Problem is NP-hard</title><venue>CoRR</venue><volume>abs/1009.4355</volume><year>2010</year><type>Informal Publications</type><key>journals/corr/abs-1009-4355</key><ee>http://arxiv.org/abs/1009.4355</ee><url>https://dblp.org/rec/journals/corr/abs-1009-4355</url></info>
+<url>URL#3290654</url>
+</hit>
+<hit score="2" id="3398419">
+<info><authors><author pid="98/1125">José R. Correa</author><author pid="40/6185">Nicole Megow</author><author pid="42/6468">Rajiv Raman 0001</author><author pid="83/4341">Karol Suchan</author></authors><title>Cardinality Constrained Graph Partitioning into Cliques with Submodular Costs.</title><venue>CTW</venue><pages>347-350</pages><year>2009</year><type>Conference and Workshop Papers</type><key>conf/colognetwente/CorreaMRS09</key><ee>http://www.lix.polytechnique.fr/ctw09/ctw09-proceedings.pdf#page=359</ee><url>https://dblp.org/rec/conf/colognetwente/CorreaMRS09</url></info>
+<url>URL#3398419</url>
+</hit>
+<hit score="2" id="3491007">
+<info><authors><author pid="83/8412">Elisabeth Günther</author><author pid="14/4275">Felix G. König</author><author pid="40/6185">Nicole Megow</author></authors><title>Scheduling and Packing Malleable Tasks with Precedence Constraints of Bounded Width.</title><venue>WAOA</venue><pages>170-181</pages><year>2009</year><type>Conference and Workshop Papers</type><key>conf/waoa/GuntherKM09</key><doi>10.1007/978-3-642-12450-1_16</doi><ee>https://doi.org/10.1007/978-3-642-12450-1_16</ee><url>https://dblp.org/rec/conf/waoa/GuntherKM09</url></info>
+<url>URL#3491007</url>
+</hit>
+<hit score="2" id="3568174">
+<info><authors><author pid="67/6755">Gary Froyland</author><author pid="06/5896">Thorsten Koch</author><author pid="40/6185">Nicole Megow</author><author pid="235/6915">Emily Duane</author><author pid="235/6934">Howard Wren</author></authors><title>Optimizing the landside operation of a container terminal.</title><venue>OR Spectr.</venue><volume>30</volume><number>1</number><pages>53-75</pages><year>2008</year><type>Journal Articles</type><key>journals/ors/FroylandKMDW08</key><doi>10.1007/S00291-007-0082-7</doi><ee>https://doi.org/10.1007/s00291-007-0082-7</ee><url>https://dblp.org/rec/journals/ors/FroylandKMDW08</url></info>
+<url>URL#3568174</url>
+</hit>
+<hit score="2" id="3867622">
+<info><authors><author pid="40/6185">Nicole Megow</author></authors><title>Coping with Incomplete Information in Scheduling - Stochastic and Online Models.</title><venue>OR</venue><pages>17-22</pages><year>2007</year><type>Conference and Workshop Papers</type><key>conf/or/Megow07</key><doi>10.1007/978-3-540-77903-2_3</doi><ee>https://doi.org/10.1007/978-3-540-77903-2_3</ee><url>https://dblp.org/rec/conf/or/Megow07</url></info>
+<url>URL#3867622</url>
+</hit>
+<hit score="2" id="3943157">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="27/1693">Marc Uetz</author><author pid="05/846">Tjark Vredeveld</author></authors><title>Models and Algorithms for Stochastic Online Scheduling.</title><venue>Math. Oper. Res.</venue><volume>31</volume><number>3</number><pages>513-525</pages><year>2006</year><type>Journal Articles</type><key>journals/mor/MegowUV06</key><doi>10.1287/MOOR.1060.0201</doi><ee>https://doi.org/10.1287/moor.1060.0201</ee><url>https://dblp.org/rec/journals/mor/MegowUV06</url></info>
+<url>URL#3943157</url>
+</hit>
+<hit score="2" id="3956410">
+<info><authors><author pid="90/2772">Sandra Gutiérrez</author><author pid="k/SvenOliverKrumke">Sven Oliver Krumke</author><author pid="40/6185">Nicole Megow</author><author pid="05/846">Tjark Vredeveld</author></authors><title>How to whack moles.</title><venue>Theor. Comput. Sci.</venue><volume>361</volume><number>2-3</number><pages>329-341</pages><year>2006</year><type>Journal Articles</type><key>journals/tcs/GutierrezKMV06</key><doi>10.1016/J.TCS.2006.05.017</doi><ee>https://doi.org/10.1016/j.tcs.2006.05.017</ee><url>https://dblp.org/rec/journals/tcs/GutierrezKMV06</url></info>
+<url>URL#3956410</url>
+</hit>
+<hit score="2" id="3991395">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="05/846">Tjark Vredeveld</author></authors><title>Approximation in Preemptive Stochastic Online Scheduling.</title><venue>ESA</venue><pages>516-527</pages><year>2006</year><type>Conference and Workshop Papers</type><key>conf/esa/MegowV06</key><doi>10.1007/11841036_47</doi><ee>https://doi.org/10.1007/11841036_47</ee><url>https://dblp.org/rec/conf/esa/MegowV06</url></info>
+<url>URL#3991395</url>
+</hit>
+<hit score="2" id="4212850">
+<info><authors><author pid="36/3354">Stefan Heinz 0001</author><author pid="k/SvenOliverKrumke">Sven Oliver Krumke</author><author pid="40/6185">Nicole Megow</author><author pid="59/2076">Jörg Rambau</author><author pid="85/1215">Andreas Tuchscherer</author><author pid="05/846">Tjark Vredeveld</author></authors><title>The Online Target Date Assignment Problem.</title><venue>WAOA</venue><pages>230-243</pages><year>2005</year><type>Conference and Workshop Papers</type><key>conf/waoa/HeinzKMRTV05</key><doi>10.1007/11671411_18</doi><ee>https://doi.org/10.1007/11671411_18</ee><url>https://dblp.org/rec/conf/waoa/HeinzKMRTV05</url></info>
+<url>URL#4212850</url>
+</hit>
+<hit score="2" id="4221488">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="27/1693">Marc Uetz</author><author pid="05/846">Tjark Vredeveld</author></authors><title>Models and Algorithms for Stochastic Online Scheduling.</title><venue>Algorithms for Optimization with Incomplete Information</venue><year>2005</year><type>Informal Publications</type><key>conf/dagstuhl/MegowUV05</key><ee>http://drops.dagstuhl.de/opus/volltexte/2005/110</ee><url>https://dblp.org/rec/conf/dagstuhl/MegowUV05</url></info>
+<url>URL#4221488</url>
+</hit>
+<hit score="2" id="4258721">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="66/5251">Andreas S. Schulz</author></authors><title>On-line scheduling to minimize average completion time revisited.</title><venue>Oper. Res. Lett.</venue><volume>32</volume><number>5</number><pages>485-490</pages><year>2004</year><type>Journal Articles</type><key>journals/orl/MegowS04</key><doi>10.1016/J.ORL.2003.11.008</doi><ee>https://doi.org/10.1016/j.orl.2003.11.008</ee><url>https://dblp.org/rec/journals/orl/MegowS04</url></info>
+<url>URL#4258721</url>
+</hit>
+<hit score="2" id="4348428">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="27/1693">Marc Uetz</author><author pid="05/846">Tjark Vredeveld</author></authors><title>Stochastic Online Scheduling on Parallel Machines.</title><venue>WAOA</venue><pages>167-180</pages><year>2004</year><type>Conference and Workshop Papers</type><key>conf/waoa/MegowUV04</key><doi>10.1007/11389811_15</doi><ee>https://doi.org/10.1007/11389811_15</ee><url>https://dblp.org/rec/conf/waoa/MegowUV04</url></info>
+<url>URL#4348428</url>
+</hit>
+<hit score="2" id="4458073">
+<info><authors><author pid="k/SvenOliverKrumke">Sven Oliver Krumke</author><author pid="40/6185">Nicole Megow</author><author pid="05/846">Tjark Vredeveld</author></authors><title>How to Whack Moles.</title><venue>WAOA</venue><pages>192-205</pages><year>2003</year><type>Conference and Workshop Papers</type><key>conf/waoa/KrumkeMV03</key><doi>10.1007/978-3-540-24592-6_15</doi><ee>https://doi.org/10.1007/978-3-540-24592-6_15</ee><url>https://dblp.org/rec/conf/waoa/KrumkeMV03</url></info>
+<url>URL#4458073</url>
+</hit>
+<hit score="2" id="4458076">
+<info><authors><author pid="40/6185">Nicole Megow</author><author pid="66/5251">Andreas S. Schulz</author></authors><title>Scheduling to Minimize Average Completion Time Revisited - Deterministic On-Line Algorithms.</title><venue>WAOA</venue><pages>227-234</pages><year>2003</year><type>Conference and Workshop Papers</type><key>conf/waoa/MegowS03</key><doi>10.1007/978-3-540-24592-6_18</doi><ee>https://doi.org/10.1007/978-3-540-24592-6_18</ee><url>https://dblp.org/rec/conf/waoa/MegowS03</url></info>
+<url>URL#4458076</url>
+</hit>
+</hits>
+</result>

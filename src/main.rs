@@ -2,6 +2,7 @@ mod arxiv;
 mod cli;
 mod config;
 mod fzf;
+mod remotes;
 mod store;
 
 use anyhow::Result;
