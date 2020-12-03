@@ -1,6 +1,6 @@
 use std::{future::Future, path::PathBuf, process::ChildStdin};
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use async_std::{
     sync::{Arc, Mutex},
     task,
@@ -11,7 +11,6 @@ use console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
 
 use crate::{
-    arxiv::download_pdf,
     config,
     store::{MatchByTitle, PaperCopy},
 };
@@ -117,4 +116,12 @@ pub fn find_selection<P: MatchByTitle + Clone>(selection: &str, entries: &[P]) -
         .into_iter()
         .find(|&paper| paper.matches_title(sel_title.trim()))
         .cloned()
+}
+
+pub async fn download_pdf(url: &str, out_path: &PathBuf) -> Result<()> {
+    let mut response = surf::get(&url).await.map_err(|err| anyhow!(err))?;
+    let body = response.body_bytes().await.map_err(|err| anyhow!(err))?;
+    let mut file = std::fs::File::create(out_path.with_extension("pdf"))?;
+    file.write_all(&body)?;
+    Ok(())
 }

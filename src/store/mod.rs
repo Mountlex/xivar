@@ -16,11 +16,10 @@ pub use identifier::*;
 pub use paper::*;
 pub use query::Query;
 
-pub fn get_store_results(query: &Vec<String>, lib: &Library) -> Result<Vec<PaperCopy>> {
-    Ok(lib
-        .iter_matches(Query::Full(query.as_slice()))
+pub fn get_store_results(query: &Vec<String>, lib: &Library) -> Vec<PaperCopy> {
+    lib.iter_matches(Query::Full(query.as_slice()))
         .cloned()
-        .collect())
+        .collect()
 }
 
 #[derive(Debug)]

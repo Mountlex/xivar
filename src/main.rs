@@ -1,4 +1,3 @@
-mod arxiv;
 mod cli;
 mod config;
 mod fzf;

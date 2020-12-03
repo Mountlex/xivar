@@ -34,7 +34,7 @@ impl Command for Search {
         let handle_ref = Arc::new(Mutex::new(fzf.stdin()));
 
         let store_handle =
-            util::async_find_and_write(async { get_store_results(&query, &lib) }, &handle_ref);
+            util::async_find_and_write(async { Ok(get_store_results(&query, &lib)) }, &handle_ref);
         let (store_results, online_results): (Vec<PaperCopy>, Vec<Paper>) = task::block_on(
             store_handle.try_join(dblp::fetch_publication_query(&query, self.num_hits)),
         )?;
