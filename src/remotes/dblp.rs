@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 
-use crate::store::{ArxivIdentifier, Doi, Identifier, Paper, PaperUrl, Preprint};
+use crate::store::{ArxivIdentifier, Doi, Identifier, Paper, PaperUrl};
 
 use super::RequestString;
 
@@ -62,7 +62,7 @@ fn parse_publ_response(response: &str) -> Result<Vec<Paper>> {
         .descendants()
         .find(|n| n.has_tag_name("hits"))
         .ok_or(anyhow!("No results!"))?;
-    let number_of_hits = hits.attribute("total").unwrap().parse::<u32>();
+    let _number_of_hits = hits.attribute("total").unwrap().parse::<u32>();
 
     let papers: Vec<Paper> = hits
         .children()

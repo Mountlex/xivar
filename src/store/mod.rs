@@ -128,14 +128,13 @@ impl Library {
     }
 
     pub fn add(&mut self, location: &PathBuf, paper: Paper) {
-        match self.papers.iter().find(|&p| p.paper == paper) {
+        match self.papers.iter_mut().find(|p| &p.paper == &paper) {
             None => self.papers.push(PaperCopy {
                 paper,
                 location: location.clone(),
             }),
-            Some(_) => {}
+            Some(paper_copy) => paper_copy.update_location(location),
         };
-
         self.modified = true;
     }
 

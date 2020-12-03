@@ -1,20 +1,17 @@
+use std::path::PathBuf;
+
 use super::{util, Command};
 use crate::config;
 use crate::fzf;
 use crate::remotes::dblp;
 use crate::store::get_store_results;
-use crate::store::{Library, MatchByTitle};
-use crate::{
-    arxiv::download_pdf,
-    store::{Paper, PaperCopy},
-};
+use crate::store::Library;
+use crate::store::{Paper, PaperCopy};
 use anyhow::{bail, Result};
 use async_std::prelude::*;
 use async_std::sync::{Arc, Mutex};
 use async_std::task;
 use clap::Clap;
-use dialoguer::{theme::ColorfulTheme, Select};
-use std::{path::PathBuf, process::ChildStdin};
 
 #[derive(Clap, Debug)]
 pub struct Search {

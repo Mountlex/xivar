@@ -3,7 +3,7 @@ use super::query::Query;
 
 use console::style;
 use serde::{Deserialize, Serialize};
-use std::path::Path;
+use std::path::{Path, PathBuf};
 
 pub trait MatchByTitle {
     fn matches_title(&self, title: &str) -> bool;
@@ -116,12 +116,16 @@ impl PaperUrl {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PaperCopy {
     pub paper: Paper,
-    pub location: std::path::PathBuf,
+    pub location: PathBuf,
 }
 
 impl PaperCopy {
     pub fn exists(&self) -> bool {
         Path::new(&self.location).exists()
+    }
+
+    pub fn update_location(&mut self, location: &PathBuf) {
+        self.location = location.clone();
     }
 }
 
