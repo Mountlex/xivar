@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Result};
 
-use crate::store::{ArxivIdentifier, Doi, Identifier, Paper, PaperUrl};
+use crate::store::{ArxivIdentifier, Doi, Identifier, Paper, PaperUrl, Preprint};
 
 use super::RequestString;
 
@@ -99,7 +99,7 @@ fn parse_publ_response(response: &str) -> Result<Vec<Paper>> {
                     let id = if let Some(doi) = info.children().find(|n| n.has_tag_name("doi")) {
                         let doi_string = doi.text().unwrap();
                         Doi::parse_doi(doi_string).ok().map(Identifier::Doi)
-                    } else if url.preprint().filter(|u| u.contains("arxiv")).is_some() {
+                    } else if url.raw().contains("arxiv") {
                         ArxivIdentifier::parse_string(&url.raw())
                             .ok()
                             .map(Identifier::Arxiv)

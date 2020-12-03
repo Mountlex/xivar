@@ -9,6 +9,7 @@ pub struct Fzf {
 impl Fzf {
     pub fn new() -> Result<Self> {
         let mut command = Command::new("fzf");
+        command.arg("--ansi");
         command.stdin(Stdio::piped()).stdout(Stdio::piped());
 
         Ok(Fzf {

@@ -1,6 +1,7 @@
 use super::identifier::Identifier;
 use super::query::Query;
 
+use console::style;
 use serde::{Deserialize, Serialize};
 use std::path::Path;
 
@@ -35,6 +36,21 @@ impl Paper {
             Query::Title(qstrings) => any_match(qstrings, &self.title),
         }
     }
+
+    pub fn default_filename(&self) -> String {
+        format!("{}", self.id).replace(".", "-")
+    }
+
+    pub fn preprint(&self) -> Option<Preprint> {
+        if let Identifier::Arxiv(ref id) = self.id {
+            Some(Preprint::Arxiv(PaperUrl::new(format!(
+                "https://arxiv.org/pdf/{}.pdf",
+                id
+            ))))
+        } else {
+            None
+        }
+    }
 }
 
 impl MatchByTitle for Paper {
@@ -45,13 +61,17 @@ impl MatchByTitle for Paper {
 
 impl std::fmt::Display for Paper {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let preprint_server = self
+            .preprint()
+            .map(|p| p.server_name())
+            .unwrap_or("".to_owned());
         write!(
             f,
             "{} [{} by {}] {}",
-            self.title,
-            self.year,
+            style(self.title.clone()).bold(),
+            style(self.year.clone()).yellow(),
             self.authors.join(", "),
-            self.url.preprint().unwrap_or("".to_owned())
+            style(preprint_server).bold().cyan()
         )
     }
 }
@@ -61,20 +81,31 @@ fn any_match(qstrings: &[String], sstring: &str) -> bool {
         .iter()
         .any(|s| sstring.to_lowercase().contains(&s.to_lowercase()))
 }
+
+pub enum Preprint {
+    Arxiv(PaperUrl),
+}
+
+impl Preprint {
+    pub fn server_name(&self) -> String {
+        match self {
+            Preprint::Arxiv(_) => "arXiv".to_owned(),
+        }
+    }
+
+    pub fn pdf_url(&self) -> &PaperUrl {
+        match self {
+            Preprint::Arxiv(url) => url,
+        }
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PaperUrl(String);
 
 impl PaperUrl {
     pub fn new(url: String) -> Self {
         PaperUrl(url)
-    }
-
-    pub fn preprint(&self) -> Option<String> {
-        if self.0.contains("arxiv") {
-            Some("arXiv".to_owned())
-        } else {
-            None
-        }
     }
 
     pub fn raw(&self) -> String {
@@ -102,6 +133,6 @@ impl MatchByTitle for PaperCopy {
 
 impl std::fmt::Display for PaperCopy {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} on disk at {:?}", self.paper, self.location)
+        write!(f, "{} {}", self.paper, style("local").blue().bold())
     }
 }

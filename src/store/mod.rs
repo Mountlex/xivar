@@ -1,6 +1,6 @@
+mod identifier;
 mod paper;
 mod query;
-mod identifier;
 
 use serde::{Deserialize, Serialize};
 use std::{fs, io};
@@ -12,8 +12,8 @@ use tempfile::{NamedTempFile, PersistError};
 
 use anyhow::{bail, Context, Result};
 use bincode::Options;
-pub use paper::{MatchByTitle, Paper, PaperCopy, PaperUrl};
 pub use identifier::*;
+pub use paper::*;
 pub use query::Query;
 
 pub fn get_store_results(query: &Vec<String>, lib: &Library) -> Result<Vec<PaperCopy>> {
@@ -153,6 +153,10 @@ impl Library {
         self.papers
             .iter()
             .filter(move |copy| copy.paper.matches(query.clone()))
+    }
+
+    pub fn iter_all<'a>(&'a self) -> impl Iterator<Item = &'a PaperCopy> {
+        self.papers.iter()
     }
 
     pub fn clean(&mut self) -> Vec<PaperCopy> {
