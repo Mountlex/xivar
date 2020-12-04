@@ -6,6 +6,7 @@ use crate::fzf;
 use crate::remotes::dblp;
 use crate::store::get_store_results;
 use crate::store::Library;
+use crate::store::Query;
 use crate::store::{Paper, PaperCopy};
 use anyhow::{bail, Result};
 use async_std::prelude::*;
@@ -15,7 +16,7 @@ use clap::Clap;
 
 #[derive(Clap, Debug)]
 pub struct Search {
-    query: Vec<String>,
+    search_terms: Vec<String>,
 
     #[clap(short, long, parse(from_os_str))]
     output: Option<PathBuf>,
@@ -26,7 +27,10 @@ pub struct Search {
 
 impl Command for Search {
     fn run(&self) -> Result<()> {
-        let query = self.query.clone();
+        let query = Query::builder()
+            .terms(&self.search_terms)
+            .max_hits(self.num_hits)
+            .build();
         let data_dir = config::xivar_data_dir()?;
         let mut lib = Library::open(&data_dir)?;
 
@@ -35,9 +39,8 @@ impl Command for Search {
 
         let store_handle =
             util::async_find_and_write(async { Ok(get_store_results(&query, &lib)) }, &handle_ref);
-        let (store_results, online_results): (Vec<PaperCopy>, Vec<Paper>) = task::block_on(
-            store_handle.try_join(dblp::fetch_publication_query(&query, self.num_hits)),
-        )?;
+        let (store_results, online_results): (Vec<PaperCopy>, Vec<Paper>) =
+            task::block_on(store_handle.try_join(dblp::fetch_query(&query)))?;
         let new_results: Vec<Paper> = online_results
             .into_iter()
             .filter(|paper| !store_results.iter().any(|p| &p.paper == paper))

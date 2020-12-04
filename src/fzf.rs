@@ -1,9 +1,30 @@
 use anyhow::{bail, Context, Result};
 
+use async_std::sync::{Arc, Mutex};
+use std::io::Write;
 use std::process::{Child, ChildStdin, Command, Stdio};
 
 pub struct Fzf {
     child: Child,
+}
+
+pub struct EnumerateStdinHandle<'a, E> {
+    stdin_handle: &'a mut ChildStdin,
+    list: Vec<E>,
+}
+
+impl<'a, E: std::fmt::Display> EnumerateStdinHandle<'a, E> {
+    fn new(stdin_handle: &'a mut ChildStdin) -> EnumerateStdinHandle<'a, E> {
+        EnumerateStdinHandle {
+            stdin_handle: stdin_handle,
+            list: vec![],
+        }
+    }
+
+    fn add(&mut self, entry: E) {
+        writeln!(self.stdin_handle, "{} {}", self.list.len(), &entry);
+        self.list.push(entry);
+    }
 }
 
 impl Fzf {

@@ -16,10 +16,8 @@ pub use identifier::*;
 pub use paper::*;
 pub use query::Query;
 
-pub fn get_store_results(query: &Vec<String>, lib: &Library) -> Vec<PaperCopy> {
-    lib.iter_matches(Query::Full(query.as_slice()))
-        .cloned()
-        .collect()
+pub fn get_store_results(query: &Query, lib: &Library) -> Vec<PaperCopy> {
+    lib.iter_matches(query).cloned().collect()
 }
 
 #[derive(Debug)]
@@ -147,14 +145,10 @@ impl Library {
         false
     }
 
-    pub fn iter_matches<'a>(&'a self, query: Query<'a>) -> impl Iterator<Item = &'a PaperCopy> {
+    pub fn iter_matches<'a>(&'a self, query: &'a Query<'a>) -> impl Iterator<Item = &'a PaperCopy> {
         self.papers
             .iter()
-            .filter(move |copy| copy.paper.matches(query.clone()))
-    }
-
-    pub fn iter_all<'a>(&'a self) -> impl Iterator<Item = &'a PaperCopy> {
-        self.papers.iter()
+            .filter(move |copy| copy.paper.matches(query))
     }
 
     pub fn clean(&mut self) -> Vec<PaperCopy> {

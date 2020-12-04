@@ -27,13 +27,11 @@ impl PartialEq for Paper {
 impl Eq for Paper {}
 
 impl Paper {
-    pub fn matches(&self, query: Query) -> bool {
-        match query {
-            Query::Full(qstrings) => {
-                any_match(qstrings, &self.authors.join(" ")) | any_match(qstrings, &self.title)
-            }
-            Query::Author(qstrings) => any_match(qstrings, &self.authors.join(" ")),
-            Query::Title(qstrings) => any_match(qstrings, &self.title),
+    pub fn matches(&self, query: &Query) -> bool {
+        if let Some(terms) = query.terms {
+            any_match(terms, &self.authors.join(" ")) | any_match(terms, &self.title)
+        } else {
+            true
         }
     }
 

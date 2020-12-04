@@ -1,11 +1,8 @@
 use anyhow::{anyhow, Result};
 
-use crate::store::{ArxivIdentifier, Doi, Identifier, Paper, PaperUrl};
+use crate::store::{ArxivIdentifier, Doi, Identifier, Paper, PaperUrl, Query};
 
-use super::RequestString;
-
-pub async fn fetch_publication_query(terms: &[String], max_hits: u32) -> Result<Vec<Paper>> {
-    let query = Query::Publication(QueryContent { terms, max_hits });
+pub async fn fetch_query<'a, Q: DBLPQuery>(query: &Q) -> Result<Vec<Paper>> {
     let mut response = surf::get(query.query_url())
         .await
         .map_err(|err| anyhow!(err))?;
@@ -14,45 +11,17 @@ pub async fn fetch_publication_query(terms: &[String], max_hits: u32) -> Result<
     parse_publ_response(&body)
 }
 
-enum Query<'a> {
-    Publication(QueryContent<'a>),
-    Author(QueryContent<'a>),
-    Venue(QueryContent<'a>),
+pub trait DBLPQuery {
+    fn query_url(&self) -> String;
 }
 
-impl<'a> RequestString for Query<'a> {
+impl<'a> DBLPQuery for Query<'a> {
     fn query_url(&self) -> String {
-        match self {
-            Query::Publication(content) => {
-                format!(
-                    "https://dblp.org/search/publ/api?{}",
-                    content.get_query_string()
-                )
-            }
-            Query::Author(content) => {
-                format!(
-                    "https://dblp.org/search/author/api?{}",
-                    content.get_query_string()
-                )
-            }
-            Query::Venue(content) => {
-                format!(
-                    "https://dblp.org/search/venue/api?{}",
-                    content.get_query_string()
-                )
-            }
-        }
-    }
-}
-
-struct QueryContent<'a> {
-    terms: &'a [String],
-    max_hits: u32,
-}
-
-impl<'a> QueryContent<'a> {
-    fn get_query_string(&self) -> String {
-        format!("q={}&h={}", self.terms.join("+"), self.max_hits)
+        format!(
+            "https://dblp.org/search/publ/api?q={}&h={}",
+            self.terms.map(|t| t.join("+")).unwrap_or_default(),
+            self.max_hits
+        )
     }
 }
 

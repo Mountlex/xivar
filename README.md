@@ -37,7 +37,7 @@ xivar clean
 ## Configuration
 
 In Linux-based systems, the database is located at `~/.local/share/xivar`.
-**Since this is still very much work in progress, the database may be corrupt after updating!**
+**Since this is still very much work in progress, the database may be corrupt after updating to a new version!**
 
 TODO
 
