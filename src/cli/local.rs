@@ -1,11 +1,11 @@
-use std::io::Write;
 use std::path::PathBuf;
 
-use anyhow::{bail, Result};
+use anyhow::Result;
 use clap::Clap;
+use fzf::Fzf;
 
 use crate::store::{Library, Query};
-use crate::{config, store::PaperCopy};
+use crate::{config, store::Paper};
 use crate::{fzf, store::get_store_results};
 
 use super::util;
@@ -31,19 +31,11 @@ impl Command for Local {
         let data_dir = config::xivar_data_dir()?;
         let mut lib = Library::open(&data_dir)?;
 
-        let mut fzf = fzf::Fzf::new()?;
-        let handle = fzf.stdin();
-        let results: Vec<PaperCopy> = get_store_results(&query, &lib);
-        for result in results.iter() {
-            writeln!(handle, "{}", result)?;
-        }
+        let mut fzf: Fzf<Paper> = Fzf::new()?;
+        let results: Vec<Paper> = get_store_results(&query, &lib);
+        fzf.write_all(results);
 
-        let selected = fzf.wait_select()?;
-
-        if let Some(paper_copy) = util::find_selection(&selected, &results) {
-            util::open_local_otherwise_download(paper_copy, &mut lib, &self.output)
-        } else {
-            bail!("Internal error!")
-        }
+        let paper = fzf.wait_for_selection()?;
+        util::open_local_otherwise_download(paper, &mut lib, &self.output)
     }
 }

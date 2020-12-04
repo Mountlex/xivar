@@ -83,6 +83,7 @@ fn parse_publ_response(response: &str) -> Result<Vec<Paper>> {
                         title,
                         year,
                         url,
+                        local_path: None,
                     }
                 })
         })

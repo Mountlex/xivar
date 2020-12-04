@@ -1,19 +1,13 @@
-use std::{future::Future, path::PathBuf, process::ChildStdin};
+use std::path::PathBuf;
 
 use anyhow::{anyhow, Result};
-use async_std::{
-    sync::{Arc, Mutex},
-    task,
-};
+use async_std::task;
 use std::io::Write;
 
 use console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
 
-use crate::{
-    config,
-    store::{MatchByTitle, PaperCopy},
-};
+use crate::config;
 
 use crate::store::{Library, Paper};
 
@@ -70,52 +64,17 @@ pub fn select_remote_or_download(
 }
 
 pub fn open_local_otherwise_download(
-    paper: PaperCopy,
+    paper: Paper,
     lib: &mut Library,
     output: &Option<PathBuf>,
 ) -> Result<()> {
     if paper.exists() {
-        open::that(paper.location)?;
+        open::that(paper.local_path.unwrap())?;
     } else {
         println!("Paper is not located at old location! Do you want to");
-        select_remote_or_download(paper.paper, lib, output)?;
+        select_remote_or_download(paper, lib, output)?;
     }
     Ok(())
-}
-
-pub async fn async_find_and_write<F, P>(
-    fetch: F,
-    handle_ref: &Arc<Mutex<&mut ChildStdin>>,
-) -> Result<Vec<P>>
-where
-    F: Future<Output = Result<Vec<P>>>,
-    P: std::fmt::Display,
-{
-    let results = task::block_on(fetch)?;
-    task::block_on(async_write(&results, handle_ref))?;
-    Ok(results)
-}
-
-pub async fn async_write<P>(entries: &[P], handle_ref: &Arc<Mutex<&mut ChildStdin>>) -> Result<()>
-where
-    P: std::fmt::Display,
-{
-    for entry in entries {
-        let mut handle = handle_ref.lock().await;
-        if let Err(_) = writeln!(handle, "{}", entry) {
-            // If this error occurs, fzf already closed, which is no problem.
-        }
-    }
-    Ok(())
-}
-
-pub fn find_selection<P: MatchByTitle + Clone>(selection: &str, entries: &[P]) -> Option<P> {
-    let selection: Vec<_> = selection.split("[").collect();
-    let sel_title = selection.first().unwrap().to_owned();
-    entries
-        .into_iter()
-        .find(|&paper| paper.matches_title(sel_title.trim()))
-        .cloned()
 }
 
 pub async fn download_pdf(url: &str, out_path: &PathBuf) -> Result<()> {

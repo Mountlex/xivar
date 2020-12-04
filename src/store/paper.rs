@@ -16,6 +16,7 @@ pub struct Paper {
     pub authors: Vec<String>,
     pub year: String,
     pub url: PaperUrl,
+    pub local_path: Option<PathBuf>,
 }
 
 impl PartialEq for Paper {
@@ -49,6 +50,14 @@ impl Paper {
             None
         }
     }
+
+    pub fn exists(&self) -> bool {
+        if let Some(ref path) = self.local_path {
+            Path::new(path).exists()
+        } else {
+            false
+        }
+    }
 }
 
 impl MatchByTitle for Paper {
@@ -63,13 +72,19 @@ impl std::fmt::Display for Paper {
             .preprint()
             .map(|p| p.server_name())
             .unwrap_or("".to_owned());
+        let local = self
+            .local_path
+            .as_ref()
+            .map(|_| "local")
+            .unwrap_or_default();
         write!(
             f,
-            "{} [{} by {}] {}",
+            "{} [{} by {}] {} {}",
             style(self.title.clone()).bold(),
             style(self.year.clone()).yellow(),
             self.authors.join(", "),
-            style(preprint_server).bold().cyan()
+            style(preprint_server).bold().cyan(),
+            style(local).blue().bold()
         )
     }
 }
@@ -112,33 +127,5 @@ impl PaperUrl {
 
     pub fn raw(&self) -> String {
         self.0.clone()
-    }
-}
-
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct PaperCopy {
-    pub paper: Paper,
-    pub location: PathBuf,
-}
-
-impl PaperCopy {
-    pub fn exists(&self) -> bool {
-        Path::new(&self.location).exists()
-    }
-
-    pub fn update_location(&mut self, location: &PathBuf) {
-        self.location = location.clone();
-    }
-}
-
-impl MatchByTitle for PaperCopy {
-    fn matches_title(&self, title: &str) -> bool {
-        self.paper.matches_title(title)
-    }
-}
-
-impl std::fmt::Display for PaperCopy {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} {}", self.paper, style("local").blue().bold())
     }
 }

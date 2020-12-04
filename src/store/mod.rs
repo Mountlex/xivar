@@ -16,13 +16,13 @@ pub use identifier::*;
 pub use paper::*;
 pub use query::Query;
 
-pub fn get_store_results(query: &Query, lib: &Library) -> Vec<PaperCopy> {
+pub fn get_store_results(query: &Query, lib: &Library) -> Vec<Paper> {
     lib.iter_matches(query).cloned().collect()
 }
 
 #[derive(Debug)]
 pub struct Library {
-    papers: Vec<PaperCopy>,
+    papers: Vec<Paper>,
     modified: bool,
     data_dir: PathBuf,
 }
@@ -124,34 +124,34 @@ impl Library {
         Ok(())
     }
 
-    pub fn add(&mut self, location: &PathBuf, paper: Paper) {
-        match self.papers.iter_mut().find(|p| &p.paper == &paper) {
-            None => self.papers.push(PaperCopy {
-                paper,
-                location: location.clone(),
-            }),
-            Some(paper_copy) => paper_copy.update_location(location),
+    pub fn add(&mut self, location: &PathBuf, mut paper: Paper) {
+        match self.papers.iter_mut().find(|p| *p == &paper) {
+            None => {
+                paper.local_path = Some(location.to_owned());
+                self.papers.push(paper);
+            }
+            Some(p) => {
+                p.local_path = Some(location.to_owned());
+            }
         };
         self.modified = true;
     }
 
-    pub fn remove(&mut self, paper: &Paper) -> bool {
-        if let Some(idx) = self.papers.iter().position(|copy| &copy.paper == paper) {
-            self.papers.swap_remove(idx);
-            self.modified = true;
-            return true;
-        }
+    // pub fn remove(&mut self, paper: &Paper) -> bool {
+    //     if let Some(idx) = self.papers.iter().position(|p| p == paper) {
+    //         self.papers.swap_remove(idx);
+    //         self.modified = true;
+    //         return true;
+    //     }
 
-        false
+    //     false
+    // }
+
+    pub fn iter_matches<'a>(&'a self, query: &'a Query<'a>) -> impl Iterator<Item = &'a Paper> {
+        self.papers.iter().filter(move |copy| copy.matches(query))
     }
 
-    pub fn iter_matches<'a>(&'a self, query: &'a Query<'a>) -> impl Iterator<Item = &'a PaperCopy> {
-        self.papers
-            .iter()
-            .filter(move |copy| copy.paper.matches(query))
-    }
-
-    pub fn clean(&mut self) -> Vec<PaperCopy> {
+    pub fn clean(&mut self) -> Vec<Paper> {
         let mut to_remove: Vec<usize> = vec![];
         for (idx, _) in self
             .papers
