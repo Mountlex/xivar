@@ -1,3 +1,4 @@
+mod add;
 mod clean;
 mod local;
 mod search;
@@ -19,6 +20,7 @@ pub enum Cli {
     Search(Search),
     Clean(Clean),
     Local(Local),
+    Add(add::Add),
 }
 
 impl Command for Cli {
@@ -27,6 +29,7 @@ impl Command for Cli {
             Cli::Search(cmd) => cmd.run(),
             Cli::Clean(cmd) => cmd.run(),
             Cli::Local(cmd) => cmd.run(),
+            Cli::Add(cmd) => cmd.run(),
         }
     }
 }
