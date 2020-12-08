@@ -57,16 +57,17 @@ impl<E: std::fmt::Display + Eq + Clone> Fzf<E> {
         });
     }
 
-    pub async fn fetch_and_write<F>(&self, fetch: F) -> Result<()>
+    pub async fn fetch_and_write<F>(&self, fetch: F) -> Result<usize>
     where
         F: Future<Output = Result<Vec<E>>>,
     {
         let results = task::block_on(fetch)?;
+        let num_results = results.len();
         let mut data_handle = self.data.lock().await;
         for entry in results {
             data_handle.write(entry);
         }
-        Ok(())
+        Ok(num_results)
     }
 
     pub fn wait_for_selection(self) -> Result<E> {
