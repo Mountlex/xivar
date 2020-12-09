@@ -1,13 +1,13 @@
 use anyhow::{anyhow, Result};
 
-use crate::store::{ArxivIdentifier, Doi, Identifier, Paper, PaperUrl, Query};
+use crate::{ArxivIdentifier, Doi, Identifier, Paper, PaperUrl, Query};
 
 pub async fn fetch_query<'a, Q: DBLPQuery>(query: &Q) -> Result<Vec<Paper>> {
     let mut response = surf::get(query.query_url())
         .await
         .map_err(|err| anyhow!(err))?;
     let body = response.body_string().await.map_err(|err| anyhow!(err))?;
-    std::fs::write("response.xml", body.clone()).expect("Unable to write file");
+    // std::fs::write("response.xml", body.clone()).expect("Unable to write file");
     parse_publ_response(&body)
 }
 

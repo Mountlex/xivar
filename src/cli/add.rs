@@ -3,21 +3,21 @@ use std::path::PathBuf;
 use anyhow::Result;
 use async_std::task;
 use clap::Clap;
+use console::style;
 use dialoguer::{Confirm, Input};
 use lopdf::{Document, Object};
 
 use super::Command;
 
-use crate::{
-    config, fzf,
-    remotes::dblp,
-    store::{Identifier, Library, Paper, PaperUrl, Query},
-};
+use crate::{config, fzf, remotes::dblp, store::Library, Identifier, Paper, PaperUrl, Query};
 
 #[derive(Clap, Debug)]
 pub struct Add {
     #[clap(parse(from_os_str))]
     pdf_file: PathBuf,
+
+    #[clap(long)]
+    offline: bool,
 }
 
 impl Command for Add {
@@ -30,10 +30,11 @@ impl Command for Add {
             let authors = get_author(&doc);
             let title = get_title(&doc);
             if let Some(ref title) = title {
-                if Confirm::new()
-                    .with_prompt(format!("Search title \"{}\" online?", title))
-                    .default(true)
-                    .interact()?
+                if !self.offline
+                    && Confirm::new()
+                        .with_prompt(format!("Search title \"{}\" online?", style(title).bold()))
+                        .default(true)
+                        .interact()?
                 {
                     let terms = vec![title.to_owned()];
                     let query = Query::builder().terms(&terms).build();
@@ -42,7 +43,7 @@ impl Command for Add {
                     if task::block_on(online_handle).is_ok() {
                         if let Ok(paper) = fzf.wait_for_selection() {
                             lib.add(&self.pdf_file, paper);
-                            println!("Added paper to library!");
+                            println!("{}", style("Added paper to library!").green().bold());
                             return Ok(());
                         }
                     }
@@ -69,7 +70,9 @@ impl Command for Add {
                 local_path: None,
             };
             lib.add(&self.pdf_file, paper);
-            println!("Added paper to library!");
+            println!("{}", style("Added paper to library!").green().bold());
+        } else {
+            println!("{}", style("The given file is no PDF!").red().bold());
         }
 
         Ok(())

@@ -1,7 +1,3 @@
-mod identifier;
-mod paper;
-mod query;
-
 use serde::{Deserialize, Serialize};
 use std::{fs, io};
 use std::{
@@ -10,11 +6,9 @@ use std::{
 };
 use tempfile::{NamedTempFile, PersistError};
 
+pub use crate::{Paper, Query};
 use anyhow::{bail, Context, Result};
 use bincode::Options;
-pub use identifier::*;
-pub use paper::*;
-pub use query::Query;
 
 pub fn get_store_results(query: &Query, lib: &Library) -> Vec<Paper> {
     lib.iter_matches(query).cloned().collect()

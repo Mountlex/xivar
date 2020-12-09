@@ -37,7 +37,7 @@ impl ArxivIdentifier {
                 number: capture[3].to_owned(),
             })
         } else {
-            bail!("Cannot read arxive-url {}!", id)
+            bail!("Cannot read arxiv-url {}!", id)
         }
     }
 }

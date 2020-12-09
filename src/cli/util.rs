@@ -4,6 +4,7 @@ use anyhow::{anyhow, Result};
 use async_std::task;
 use std::io::Write;
 
+use console::style;
 use console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
 
@@ -46,7 +47,12 @@ pub fn select_remote_or_download(
                 spinner.set_message("Downloading");
                 spinner.enable_steady_tick(10);
                 task::block_on(download_pdf(&preprint.pdf_url().raw(), &dest))?;
-                spinner.abandon_with_message(&format!("Saved file to {:?}!", dest));
+                spinner.abandon_with_message(
+                    &style(format!("Saved file to {:?}!", dest))
+                        .green()
+                        .bold()
+                        .to_string(),
+                );
 
                 lib.add(&dest, paper);
                 open::that(dest)?;

@@ -8,7 +8,9 @@ Manage your local scientific library!
 
 ## Installation
 
-First, install [fzf](https://github.com/junegunn/fzf). Then install `xivar` via
+First, install [fzf](https://github.com/junegunn/fzf). **_(required)_**
+
+Then install `xivar` via
 
 ```bash
 cargo install xivar
@@ -17,6 +19,8 @@ cargo install xivar
 ## Usage
 
 `xivar` lets you search publications online at [DBLP](https://dblp.org/), and download them from a preprint server (arXiv etc.) if available. `xivar` saves the locations of downloaded publications and shows them in your next search.
+
+### Search
 
 Search a publication online and local
 
@@ -36,11 +40,23 @@ Specify a maximum number of hits (default is 100)
 xivar search bla bla -n 30
 ```
 
+### Clean
+
 Clean your database, i.e. remove entries of publications which cannot be found at their saved location.
 
 ```bash
 xivar clean
 ```
+
+### Add
+
+Add a local pdf to the database.
+
+```bash
+xivar add paper.pdf
+```
+
+If `xivar` finds any metadata in the PDF-file, you can confirm to search the title online. If you can find the matching paper online, all necessary information will be fetched and written to your library. Otherwise, you have to manually enter them.
 
 ## Configuration
 
@@ -55,6 +71,6 @@ document_dir = "absolute/path/to/directory"
 
 ## Roadmap
 
-- Add pdfs manually
+- Update library
 - Export bib-files
 - ...

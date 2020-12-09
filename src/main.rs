@@ -1,8 +1,15 @@
 mod cli;
 mod config;
 mod fzf;
+mod identifier;
+mod paper;
+mod query;
 mod remotes;
 mod store;
+
+pub use identifier::*;
+pub use paper::*;
+pub use query::Query;
 
 use anyhow::Result;
 use clap::Clap;
