@@ -43,8 +43,9 @@ impl Command for Add {
             spinner.finish_and_clear();
 
             if let Some(ref title) = title {
-                let terms = vec![title.to_owned()];
-                if !get_store_results(&Query::builder().terms(&terms).build(), &lib).is_empty() {
+                if !get_store_results(Query::builder().terms(vec![title.to_owned()]).build(), &lib)
+                    .is_empty()
+                {
                     println!(
                         "Note that there already is a paper with the title {} in your library!",
                         style(title).bold().cyan()

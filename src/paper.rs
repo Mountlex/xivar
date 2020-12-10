@@ -29,8 +29,9 @@ impl Eq for Paper {}
 
 impl Paper {
     pub fn matches(&self, query: &Query) -> bool {
-        if let Some(terms) = query.terms {
-            any_match(terms, &self.authors.join(" ")) | any_match(terms, &self.title)
+        if let Some(ref terms) = query.terms {
+            any_match(terms.as_slice(), &self.authors.join(" "))
+                | any_match(terms.as_slice(), &self.title)
         } else {
             true
         }

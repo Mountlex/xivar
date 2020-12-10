@@ -29,12 +29,12 @@ pub struct ArxivIdentifier {
 impl ArxivIdentifier {
     pub fn parse_string(id: &str) -> Result<Self> {
         let temp = id.split("/").last().unwrap();
-        let re = Regex::new(r"(\d{2})(\d{2})\.?(.+)").unwrap();
+        let re = Regex::new(r"(\d{2})(\d{2})\.?(\d+)").unwrap();
         if let Some(capture) = re.captures(temp) {
             Ok(ArxivIdentifier {
                 year: capture[1].parse::<u32>().unwrap(),
                 month: capture[2].parse::<u32>().unwrap(),
-                number: capture[3].to_owned(),
+                number: capture[3].trim().to_owned(),
             })
         } else {
             bail!("Cannot read arxiv-url {}!", id)

@@ -10,8 +10,8 @@ pub use crate::{Paper, Query};
 use anyhow::{bail, Context, Result};
 use bincode::Options;
 
-pub fn get_store_results(query: &Query, lib: &Library) -> Vec<Paper> {
-    lib.iter_matches(query).cloned().collect()
+pub fn get_store_results(query: Query, lib: &Library) -> Vec<Paper> {
+    lib.iter_matches(&query).cloned().collect()
 }
 
 #[derive(Debug)]
@@ -141,7 +141,7 @@ impl Library {
     //     false
     // }
 
-    pub fn iter_matches<'a>(&'a self, query: &'a Query<'a>) -> impl Iterator<Item = &'a Paper> {
+    pub fn iter_matches<'a>(&'a self, query: &'a Query) -> impl Iterator<Item = &'a Paper> {
         self.papers.iter().filter(move |copy| copy.matches(query))
     }
 

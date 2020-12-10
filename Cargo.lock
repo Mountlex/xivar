@@ -2283,6 +2283,7 @@ version = "0.2.0"
 dependencies = [
  "anyhow",
  "async-std",
+ "async-trait",
  "bincode",
  "clap",
  "config",
