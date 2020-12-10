@@ -145,6 +145,12 @@ impl Library {
         self.papers.iter().filter(move |copy| copy.matches(query))
     }
 
+    pub fn find_paper_by_path<'a>(&'a self, path: &PathBuf) -> Option<&'a Paper> {
+        self.papers
+            .iter()
+            .find(|paper| paper.local_path.is_some() && paper.local_path.as_ref().unwrap() == path)
+    }
+
     pub fn clean(&mut self) -> Vec<Paper> {
         let mut to_remove: Vec<usize> = vec![];
         for (idx, _) in self

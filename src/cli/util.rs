@@ -8,7 +8,7 @@ use console::style;
 use console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
 
-use crate::config;
+use crate::{config, fzf::Fzf, remotes::dblp, Query};
 
 use crate::store::{Library, Paper};
 
@@ -81,6 +81,15 @@ pub fn open_local_otherwise_download(
         select_remote_or_download(paper, lib, output)?;
     }
     Ok(())
+}
+
+pub fn search_and_select(search_string: &str) -> Result<Paper> {
+    let terms = vec![search_string.to_owned()];
+    let query = Query::builder().terms(&terms).build();
+    let fzf = Fzf::new()?;
+    let online_handle = fzf.fetch_and_write(dblp::fetch_query(&query));
+    task::block_on(online_handle)?;
+    fzf.wait_for_selection()
 }
 
 pub async fn download_pdf(url: &str, out_path: &PathBuf) -> Result<()> {
