@@ -15,7 +15,7 @@ impl Command for Clean {
 
         let removed = lib.clean();
         for paper in removed {
-            println!("Removed {:?}", paper.local_path);
+            println!("Removed {:?}", paper.local_path.unwrap());
         }
 
         lib.save()
