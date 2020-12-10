@@ -41,5 +41,7 @@ pub async fn fetch_all_and_merge(query: Query) -> Result<Vec<Paper>> {
             a.push(paper)
         }
     }
+    a.sort_by_key(|paper| paper.year.clone());
+    a.reverse();
     Ok(a)
 }
