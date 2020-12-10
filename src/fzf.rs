@@ -29,7 +29,9 @@ impl<E: std::fmt::Display + Eq> EnumeratedStdin<E> {
     fn write(&mut self, entry: E) {
         if !self.list.contains(&entry) {
             let len = self.list.len();
-            writeln!(self.stdin(), "{} {}", len, &entry).unwrap();
+            if let Err(_) = writeln!(self.stdin(), "{} {}", len, &entry) {
+                // This error occurs if the user already entered his choice while xivar still fetched data.
+            }
             self.list.push(entry);
         }
     }
