@@ -2,11 +2,13 @@ use std::path::PathBuf;
 
 use anyhow::Result;
 use clap::Clap;
-use fzf::Fzf;
 
-use crate::store::{Library, Query};
-use crate::{config, store::Paper};
-use crate::{fzf, store::get_store_results};
+use crate::{
+    config,
+    fzf::Fzf,
+    remotes::local::{Library, LocalPaper},
+    Query,
+};
 
 use super::util;
 use super::Command;
@@ -31,11 +33,12 @@ impl Command for Local {
         let data_dir = config::xivar_data_dir()?;
         let mut lib = Library::open(&data_dir)?;
 
-        let mut fzf: Fzf<Paper> = Fzf::new()?;
-        let results: Vec<Paper> = get_store_results(query, &lib);
+        let mut fzf: Fzf<LocalPaper> = Fzf::new()?;
+        let results: Vec<LocalPaper> = lib.iter_matches(&query).cloned().collect();
+
         fzf.write_all(results);
 
         let paper = fzf.wait_for_selection()?;
-        util::open_local_otherwise_download(paper, &mut lib, &self.output)
+        util::open_local_otherwise_download(paper, &mut lib, self.output.as_ref())
     }
 }

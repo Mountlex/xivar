@@ -1,8 +1,45 @@
+use std::fmt::{Display, Formatter};
+
 use anyhow::{anyhow, Result};
+use console::style;
 
-use crate::{ArxivIdentifier, Identifier, Paper, PaperUrl, Query};
+use crate::{ArxivIdentifier, Identifier, PaperInfo, PaperTitle, PaperUrl, Query};
 
-use super::Remote;
+use super::{PaperHit, Remote, RemoteTag};
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ArxivPaper {
+    metadata: PaperInfo,
+    pub ee: PaperUrl,
+}
+
+impl ArxivPaper {
+    pub fn metadata(&self) -> &PaperInfo {
+        &self.metadata
+    }
+
+    pub fn download_url(&self) -> PaperUrl {
+        PaperUrl::new(format!(
+            "https://arxiv.org/pdf/{}.pdf",
+            self.metadata.id.as_ref().unwrap()
+        ))
+    }
+}
+
+impl RemoteTag for ArxivPaper {
+    fn remote_tag(&self) -> String {
+        style(format!("arXiv ({})", self.metadata().year))
+            .yellow()
+            .bold()
+            .to_string()
+    }
+}
+
+impl Display for ArxivPaper {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} {}", self.metadata, self.remote_tag())
+    }
+}
 
 pub struct Arxiv;
 
@@ -15,14 +52,14 @@ impl Remote for Arxiv {
         )
     }
 
-    fn parse_response(response: &String) -> Result<Vec<Paper>> {
+    fn parse_response(response: &String) -> Result<Vec<PaperHit>> {
         let doc = roxmltree::Document::parse(response)?;
         let feed = doc
             .descendants()
             .find(|n| n.has_tag_name("feed"))
             .ok_or(anyhow!("No results!"))?;
 
-        let papers: Vec<Paper> = feed
+        let papers: Vec<PaperHit> = feed
             .children()
             .filter(|entry| entry.has_tag_name("entry"))
             .map(|entry| {
@@ -71,20 +108,23 @@ impl Remote for Arxiv {
                     .find(|n| n.has_tag_name("id"))
                     .map(|n| n.text().unwrap().to_owned())
                     .unwrap_or("None".to_owned());
-                let url = PaperUrl::new(url_string);
-                let id = ArxivIdentifier::parse_string(&url.raw())
+                let ee = PaperUrl::new(url_string);
+                let id = ArxivIdentifier::parse_string(&ee.raw())
                     .ok()
                     .map(Identifier::Arxiv)
                     .unwrap();
 
-                Paper {
-                    id,
+                let paper = PaperInfo {
+                    id: Some(id),
                     authors,
-                    title,
+                    venue: "CoRR".to_owned(),
+                    title: PaperTitle::new(title),
                     year,
-                    url,
-                    local_path: None,
-                }
+                };
+                PaperHit::Arxiv(ArxivPaper {
+                    metadata: paper,
+                    ee,
+                })
             })
             .collect();
 

@@ -10,8 +10,8 @@ use super::{util, Command};
 
 use crate::{
     config,
-    store::{get_store_results, Library},
-    Identifier, Paper, PaperUrl, Query,
+    remotes::local::{Library, LocalPaper},
+    Identifier, PaperInfo, PaperTitle, Query,
 };
 
 #[derive(Clap, Debug)]
@@ -43,8 +43,10 @@ impl Command for Add {
             spinner.finish_and_clear();
 
             if let Some(ref title) = title {
-                if !get_store_results(Query::builder().terms(vec![title.to_owned()]).build(), &lib)
-                    .is_empty()
+                if lib
+                    .iter_matches(&Query::builder().terms(vec![title.to_owned()]).build())
+                    .count()
+                    > 0
                 {
                     println!(
                         "Note that there already is a paper with the title {} in your library!",
@@ -66,19 +68,26 @@ impl Command for Add {
                     .items(&options)
                     .default(0)
                     .interact_on_opt(&Term::stderr())?;
-                let paper = match selection {
+                let paper_info = match selection {
                     Some(0) => enter_manually(title.as_deref(), authors.as_deref()),
                     Some(1) => {
                         let search_string: String =
                             Input::new().with_prompt("Query").interact_text()?;
-                        util::search_and_select(&search_string)
+                        util::search_and_select(&lib, &search_string)
+                            .map(|paper| paper.metadata().clone())
                     }
-                    Some(2) => util::search_and_select(title.as_deref().unwrap()),
+                    Some(2) => util::search_and_select(&lib, title.as_deref().unwrap())
+                        .map(|paper| paper.metadata().clone()),
                     _ => {
                         bail!("Aborting!")
                     }
                 };
-                if let Ok(paper) = paper {
+                if let Ok(paper_info) = paper_info {
+                    let paper = LocalPaper {
+                        metadata: paper_info,
+                        location: self.pdf_file.clone(),
+                        ees: vec![],
+                    };
                     lib.add(&self.pdf_file, paper);
                     println!("{}", style("Added paper to library!").green().bold());
                     break;
@@ -92,7 +101,7 @@ impl Command for Add {
     }
 }
 
-fn enter_manually(title: Option<&str>, authors: Option<&str>) -> Result<Paper> {
+fn enter_manually(title: Option<&str>, authors: Option<&str>) -> Result<PaperInfo> {
     let title: String = Input::new()
         .with_prompt("Title")
         .with_initial_text(title.unwrap_or_default())
@@ -102,15 +111,14 @@ fn enter_manually(title: Option<&str>, authors: Option<&str>) -> Result<Paper> {
         .with_initial_text(authors.unwrap_or_default())
         .interact_text()?;
     let year: String = Input::new().with_prompt("Year").interact_text()?;
-    let url: String = Input::new().with_prompt("Url").interact_text()?;
-    let id: String = Input::new().with_prompt("Identifier").interact_text()?;
-    Ok(Paper {
-        id: Identifier::Custom(id),
-        title,
+    let venue: String = Input::new().with_prompt("Venue").interact_text()?;
+    let id: Option<String> = Input::new().with_prompt("Identifier").interact_text().ok();
+    Ok(PaperInfo {
+        id: id.map(Identifier::Custom),
+        title: PaperTitle::new(title),
         authors: authors.split(",").map(|a| a.trim().to_owned()).collect(),
         year,
-        url: PaperUrl::new(url),
-        local_path: None,
+        venue,
     })
 }
 

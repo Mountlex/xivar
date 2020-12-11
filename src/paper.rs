@@ -3,92 +3,60 @@ use super::query::Query;
 
 use console::style;
 use serde::{Deserialize, Serialize};
-use std::path::{Path, PathBuf};
 
 pub trait MatchByTitle {
     fn matches_title(&self, title: &str) -> bool;
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
-pub struct Paper {
-    pub id: Identifier,
-    pub title: String,
+pub trait PaperRef: std::fmt::Display {
+    fn metadata(&self) -> &PaperInfo;
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Hash)]
+pub struct PaperInfo {
+    pub id: Option<Identifier>,
+    pub title: PaperTitle,
+    pub venue: String,
     pub authors: Vec<String>,
     pub year: String,
-    pub url: PaperUrl,
-    pub local_path: Option<PathBuf>,
 }
 
-impl PartialEq for Paper {
-    fn eq(&self, other: &Paper) -> bool {
-        self.id == other.id
-    }
-}
-
-impl Eq for Paper {}
-
-impl Paper {
+impl PaperInfo {
     pub fn matches(&self, query: &Query) -> bool {
         if let Some(ref terms) = query.terms {
             any_match(terms.as_slice(), &self.authors.join(" "))
-                | any_match(terms.as_slice(), &self.title)
+                | any_match(terms.as_slice(), &self.title.normalized())
         } else {
             true
         }
     }
 
     pub fn default_filename(&self) -> String {
-        format!("{}", self.id).replace(".", "-")
-    }
-
-    pub fn preprint(&self) -> Option<Preprint> {
-        if let Identifier::Arxiv(ref id) = self.id {
-            Some(Preprint::Arxiv(PaperUrl::new(format!(
-                "https://arxiv.org/pdf/{}.pdf",
-                id
-            ))))
-        } else {
-            None
-        }
-    }
-
-    pub fn exists(&self) -> bool {
-        if let Some(ref path) = self.local_path {
-            Path::new(path).exists()
-        } else {
-            false
-        }
+        format!("{}", self.id.as_ref().unwrap()).replace(".", "-")
     }
 }
 
-impl MatchByTitle for Paper {
-    fn matches_title(&self, title: &str) -> bool {
-        self.title.trim() == title
-    }
-}
-
-impl std::fmt::Display for Paper {
+impl std::fmt::Display for PaperInfo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let preprint_server = self
-            .preprint()
-            .map(|p| p.server_name())
-            .unwrap_or("".to_owned());
-        let local = self
-            .local_path
-            .as_ref()
-            .map(|_| "local")
-            .unwrap_or_default();
         write!(
             f,
-            "{} [{} by {}] {} {}",
-            style(self.title.clone()).bold(),
-            style(self.year.clone()).yellow(),
+            "{}. [{}]",
+            style(self.title.normalized()).bold(),
             self.authors.join(", "),
-            style(preprint_server).bold().cyan(),
-            style(local).blue().bold()
         )
     }
 }
+
+impl PartialEq for PaperInfo {
+    fn eq(&self, other: &PaperInfo) -> bool {
+        match (self.id.as_ref(), other.id.as_ref()) {
+            (Some(a), Some(b)) => a == b,
+            _ => self.title == other.title && self.venue == other.venue && self.year == other.year,
+        }
+    }
+}
+
+impl Eq for PaperInfo {}
 
 fn any_match(qstrings: &[String], sstring: &str) -> bool {
     if qstrings.is_empty() {
@@ -100,25 +68,39 @@ fn any_match(qstrings: &[String], sstring: &str) -> bool {
     }
 }
 
-pub enum Preprint {
-    Arxiv(PaperUrl),
+#[derive(Debug, Serialize, Deserialize, Clone, Hash)]
+pub struct PaperTitle {
+    words: Vec<String>,
 }
 
-impl Preprint {
-    pub fn server_name(&self) -> String {
-        match self {
-            Preprint::Arxiv(_) => "arXiv".to_owned(),
-        }
+impl PaperTitle {
+    pub fn new(title: String) -> Self {
+        let words = title
+            .replace(".", "")
+            .split_whitespace()
+            .map(|s| s.to_string())
+            .collect();
+        PaperTitle { words }
     }
 
-    pub fn pdf_url(&self) -> &PaperUrl {
-        match self {
-            Preprint::Arxiv(url) => url,
-        }
+    pub fn normalized(&self) -> String {
+        self.words
+            .iter()
+            .map(|s| s.replace("$", "").to_lowercase())
+            .collect::<Vec<String>>()
+            .join(" ")
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+impl PartialEq for PaperTitle {
+    fn eq(&self, other: &PaperTitle) -> bool {
+        self.normalized() == other.normalized()
+    }
+}
+
+impl Eq for PaperTitle {}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct PaperUrl(String);
 
 impl PaperUrl {
@@ -128,5 +110,11 @@ impl PaperUrl {
 
     pub fn raw(&self) -> String {
         self.0.clone()
+    }
+}
+
+impl std::fmt::Display for PaperUrl {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.0)
     }
 }

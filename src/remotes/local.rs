@@ -1,22 +1,59 @@
+use console::style;
 use serde::{Deserialize, Serialize};
-use std::{fs, io};
+use std::{
+    fmt::{Display, Formatter},
+    fs, io,
+};
 use std::{
     io::Write,
     path::{Path, PathBuf},
 };
 use tempfile::{NamedTempFile, PersistError};
 
-pub use crate::{Paper, Query};
+pub use crate::Query;
+use crate::{PaperInfo, PaperUrl};
 use anyhow::{bail, Context, Result};
 use bincode::Options;
 
-pub fn get_store_results(query: Query, lib: &Library) -> Vec<Paper> {
-    lib.iter_matches(&query).cloned().collect()
+use super::{PaperHit, RemoteTag};
+
+pub fn get_local_hits(lib: &Library, query: &Query) -> Vec<PaperHit> {
+    lib.iter_matches(query)
+        .map(|paper| PaperHit::Local(paper.clone()))
+        .collect()
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct LocalPaper {
+    pub metadata: PaperInfo,
+    pub location: PathBuf,
+    pub ees: Vec<PaperUrl>,
+}
+
+impl LocalPaper {
+    pub fn exists(&self) -> bool {
+        Path::new(&self.location).exists()
+    }
+    pub fn metadata(&self) -> &PaperInfo {
+        &self.metadata
+    }
+}
+
+impl RemoteTag for LocalPaper {
+    fn remote_tag(&self) -> String {
+        style("local").red().bold().to_string()
+    }
+}
+
+impl Display for LocalPaper {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} {}", self.metadata, self.remote_tag())
+    }
 }
 
 #[derive(Debug)]
 pub struct Library {
-    papers: Vec<Paper>,
+    papers: Vec<LocalPaper>,
     modified: bool,
     data_dir: PathBuf,
 }
@@ -118,14 +155,14 @@ impl Library {
         Ok(())
     }
 
-    pub fn add(&mut self, location: &PathBuf, mut paper: Paper) {
+    pub fn add(&mut self, location: &PathBuf, mut paper: LocalPaper) {
         match self.papers.iter_mut().find(|p| *p == &paper) {
             None => {
-                paper.local_path = Some(location.to_owned());
+                paper.location = location.to_owned();
                 self.papers.push(paper);
             }
             Some(p) => {
-                p.local_path = Some(location.to_owned());
+                p.location = location.to_owned();
             }
         };
         self.modified = true;
@@ -141,17 +178,17 @@ impl Library {
     //     false
     // }
 
-    pub fn iter_matches<'a>(&'a self, query: &'a Query) -> impl Iterator<Item = &'a Paper> {
-        self.papers.iter().filter(move |copy| copy.matches(query))
-    }
-
-    pub fn find_paper_by_path<'a>(&'a self, path: &PathBuf) -> Option<&'a Paper> {
+    pub fn iter_matches<'a>(&'a self, query: &'a Query) -> impl Iterator<Item = &'a LocalPaper> {
         self.papers
             .iter()
-            .find(|paper| paper.local_path.is_some() && paper.local_path.as_ref().unwrap() == path)
+            .filter(move |copy| copy.metadata.matches(query))
     }
 
-    pub fn clean(&mut self) -> Vec<Paper> {
+    pub fn find_paper_by_path<'a>(&'a self, path: &PathBuf) -> Option<&'a LocalPaper> {
+        self.papers.iter().find(|paper| &paper.location == path)
+    }
+
+    pub fn clean(&mut self) -> Vec<LocalPaper> {
         let mut to_remove: Vec<usize> = vec![];
         for (idx, _) in self
             .papers

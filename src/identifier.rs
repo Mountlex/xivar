@@ -2,7 +2,7 @@ use anyhow::{bail, Result};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone)]
+#[derive(Debug, Serialize, Deserialize, Eq, PartialEq, Clone, Hash)]
 pub enum Identifier {
     Arxiv(ArxivIdentifier),
     Doi(Doi),
@@ -14,12 +14,12 @@ impl std::fmt::Display for Identifier {
         match self {
             Identifier::Arxiv(arxiv) => write!(f, "{}", arxiv),
             Identifier::Doi(doi) => write!(f, "{}", doi),
-            Identifier::Custom(id) => write!(f, "{}", id),
+            Identifier::Custom(custom) => write!(f, "{}", custom),
         }
     }
 }
 
-#[derive(Debug, Default, Serialize, Deserialize, Eq, PartialEq, Clone)]
+#[derive(Debug, Default, Serialize, Deserialize, Eq, PartialEq, Clone, Hash)]
 pub struct ArxivIdentifier {
     year: u32,
     month: u32,
@@ -48,7 +48,7 @@ impl std::fmt::Display for ArxivIdentifier {
     }
 }
 
-#[derive(Debug, Default, Serialize, Deserialize, Eq, PartialEq, Clone)]
+#[derive(Debug, Default, Serialize, Deserialize, Eq, PartialEq, Clone, Hash)]
 pub struct Doi {
     organization: u32,
     id: String,

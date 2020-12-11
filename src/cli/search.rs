@@ -1,16 +1,15 @@
 use std::path::PathBuf;
 
 use super::{util, Command};
-use crate::config;
 use crate::fzf;
 use crate::remotes;
-use crate::store::get_store_results;
-use crate::store::Library;
-use crate::store::Query;
+use crate::{config, Query};
+
 use anyhow::Result;
-use async_std::prelude::*;
 use async_std::task;
 use clap::Clap;
+use fzf::Fzf;
+use remotes::local::Library;
 
 #[derive(Clap, Debug)]
 pub struct Search {
@@ -32,19 +31,12 @@ impl Command for Search {
         let data_dir = config::xivar_data_dir()?;
         let mut lib = Library::open(&data_dir)?;
 
-        let fzf = fzf::Fzf::new()?;
-
-        let store_handle =
-            fzf.fetch_and_write(async { Ok(get_store_results(query.clone(), &lib)) });
-        let online_handle = fzf.fetch_and_write(remotes::fetch_all_and_merge(query.clone()));
-        task::block_on(store_handle.try_join(online_handle))?;
+        let fzf = Fzf::new()?;
+        let handle = fzf.fetch_and_write(remotes::fetch_all_and_merge(&lib, query));
+        task::block_on(handle)?;
 
         let paper = fzf.wait_for_selection()?;
-
-        if paper.local_path.is_some() {
-            util::open_local_otherwise_download(paper, &mut lib, &self.output)
-        } else {
-            util::select_remote_or_download(paper, &mut lib, &self.output)
-        }
+        let version = util::select_hit(paper)?;
+        util::select_action_for_hit(version, &mut lib, self.output.as_ref())
     }
 }

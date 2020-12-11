@@ -1,9 +1,8 @@
-use crate::store::Library;
 use anyhow::Result;
 use clap::Clap;
 
 use super::Command;
-use crate::config;
+use crate::{config, remotes::local::Library};
 
 #[derive(Clap, Debug)]
 pub struct Clean {}
@@ -15,7 +14,7 @@ impl Command for Clean {
 
         let removed = lib.clean();
         for paper in removed {
-            println!("Removed {:?}", paper.local_path.unwrap());
+            println!("Removed {:?}", paper.location);
         }
 
         lib.save()
