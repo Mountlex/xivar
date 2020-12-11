@@ -18,7 +18,7 @@ cargo install xivar
 
 ## Usage
 
-`xivar` lets you search publications online at [DBLP](https://dblp.org/), and download them from a preprint server (arXiv etc.) if available. `xivar` saves the locations of downloaded publications and shows them in your next search.
+`xivar` lets you search publications online at [DBLP](https://dblp.org/) and [arXiv](https://arxiv.org/), and open or download them if available. `xivar` saves the locations of downloaded publications and shows them in your next search.
 
 ### Search
 
@@ -28,7 +28,7 @@ Search a publication online and local
 xivar search keyword1 keyword2 ...
 ```
 
-Search only local
+Search only locally saved files
 
 ```bash
 xivar local keyword1 keyword2 ...
