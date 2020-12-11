@@ -23,9 +23,9 @@ impl DBLPPaper {
 impl RemoteTag for DBLPPaper {
     fn remote_tag(&self) -> String {
         style(format!(
-            "DBLP ({} {})",
-            self.metadata().venue,
-            self.metadata().year
+            "DBLP({} {})",
+            self.metadata().year,
+            self.metadata().venue
         ))
         .cyan()
         .bold()
@@ -74,10 +74,8 @@ impl Remote for DBLP {
                         let venue = info
                             .children()
                             .find(|n| n.has_tag_name("venue"))
-                            .unwrap()
-                            .text()
-                            .unwrap()
-                            .to_owned();
+                            .map(|v| v.text().unwrap().to_owned())
+                            .unwrap_or_default();
                         let year = info
                             .children()
                             .find(|n| n.has_tag_name("year"))
@@ -88,7 +86,7 @@ impl Remote for DBLP {
                         let authors: Vec<String> = info
                             .descendants()
                             .filter(|n| n.has_tag_name("author"))
-                            .map(|a| a.text().unwrap().trim().to_owned())
+                            .map(|a| a.text().unwrap().replace(r"\d{4}", "").trim().to_owned())
                             .collect();
 
                         let ee_string = info

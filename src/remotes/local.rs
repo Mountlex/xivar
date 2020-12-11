@@ -41,7 +41,14 @@ impl LocalPaper {
 
 impl RemoteTag for LocalPaper {
     fn remote_tag(&self) -> String {
-        style("local").red().bold().to_string()
+        style(format!(
+            "local ({} {})",
+            self.metadata().year,
+            self.metadata().venue
+        ))
+        .red()
+        .bold()
+        .to_string()
     }
 }
 

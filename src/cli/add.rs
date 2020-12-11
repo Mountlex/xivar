@@ -73,8 +73,8 @@ impl Command for Add {
                     Some(1) => {
                         let search_string: String =
                             Input::new().with_prompt("Query").interact_text()?;
-                        util::search_and_select(&lib, &search_string)
-                            .map(|paper| paper.metadata().clone())
+                        let paper = util::search_and_select(&lib, &search_string)?;
+                        util::select_hit(paper).map(|hit| hit.metadata().clone())
                     }
                     Some(2) => util::search_and_select(&lib, title.as_deref().unwrap())
                         .map(|paper| paper.metadata().clone()),

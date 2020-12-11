@@ -41,7 +41,7 @@ impl std::fmt::Display for PaperInfo {
         write!(
             f,
             "{}. [{}]",
-            style(self.title.normalized()).bold(),
+            style(format!("{}", self.title)).bold(),
             self.authors.join(", "),
         )
     }
@@ -77,6 +77,7 @@ impl PaperTitle {
     pub fn new(title: String) -> Self {
         let words = title
             .replace(".", "")
+            .replace("$", "")
             .split_whitespace()
             .map(|s| s.to_string())
             .collect();
@@ -86,9 +87,15 @@ impl PaperTitle {
     pub fn normalized(&self) -> String {
         self.words
             .iter()
-            .map(|s| s.replace("$", "").to_lowercase())
+            .map(|s| s.to_lowercase())
             .collect::<Vec<String>>()
             .join(" ")
+    }
+}
+
+impl std::fmt::Display for PaperTitle {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.words.join(" "))
     }
 }
 

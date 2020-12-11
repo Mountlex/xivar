@@ -36,7 +36,12 @@ impl Command for Search {
         task::block_on(handle)?;
 
         let paper = fzf.wait_for_selection()?;
-        let version = util::select_hit(paper)?;
-        util::select_action_for_hit(version, &mut lib, self.output.as_ref())
+        loop {
+            let version = util::select_hit(paper.clone())?;
+            if util::select_action_for_hit(version, &mut lib, self.output.as_ref()).is_ok() {
+                break;
+            }
+        }
+        Ok(())
     }
 }

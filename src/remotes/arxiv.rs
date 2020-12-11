@@ -28,7 +28,7 @@ impl ArxivPaper {
 
 impl RemoteTag for ArxivPaper {
     fn remote_tag(&self) -> String {
-        style(format!("arXiv ({})", self.metadata().year))
+        style(format!("arXiv({})", self.metadata().year))
             .yellow()
             .bold()
             .to_string()
