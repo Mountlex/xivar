@@ -42,7 +42,7 @@ impl LocalPaper {
 impl RemoteTag for LocalPaper {
     fn remote_tag(&self) -> String {
         style(format!(
-            "local ({} {})",
+            "Local({} {})",
             self.metadata().year,
             self.metadata().venue
         ))
