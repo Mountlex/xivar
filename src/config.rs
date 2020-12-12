@@ -30,11 +30,21 @@ pub fn xivar_document_dir() -> Result<PathBuf> {
     };
 
     let mut settings = config::Config::default();
-    settings
-        .merge(config::File::from(config_file))
-        .unwrap()
-        .merge(config::Environment::with_prefix("XIVAR"))
-        .unwrap();
+    if config_file.exists() {
+        settings.merge(config::File::from(config_file))?;
+    }
+
+    settings.merge(config::Environment::with_prefix("XIVAR"))?;
+    settings.set(
+        "document_dir",
+        dirs::document_dir()
+            .unwrap()
+            .as_path()
+            .as_os_str()
+            .to_str()
+            .unwrap()
+            .to_owned(),
+    )?;
 
     let path = settings.get::<String>("document_dir")?;
     Ok(PathBuf::from(path))
