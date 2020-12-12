@@ -78,9 +78,7 @@ impl Command for Add {
                     }
                     Some(2) => util::search_and_select(&lib, title.as_deref().unwrap())
                         .map(|paper| paper.metadata().clone()),
-                    _ => {
-                        bail!("Aborting!")
-                    }
+                    _ => bail!("Aborting!"),
                 };
                 if let Ok(paper_info) = paper_info {
                     let paper = LocalPaper {
@@ -140,7 +138,7 @@ fn get_info_field(doc: &Document, field_name: &str) -> Option<String> {
         .and_then(|dict| {
             dict.get(field_name.as_bytes()).ok().and_then(|obj| {
                 let field = std::str::from_utf8(obj.as_str().unwrap())
-                    .unwrap()
+                    .unwrap_or_default()
                     .replace("(", "")
                     .replace(")", "");
                 if field.is_empty() {
