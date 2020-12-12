@@ -163,7 +163,11 @@ impl Library {
     }
 
     pub fn add(&mut self, location: &PathBuf, mut paper: LocalPaper) {
-        match self.papers.iter_mut().find(|p| *p == &paper) {
+        match self
+            .papers
+            .iter_mut()
+            .find(|p| p.metadata() == paper.metadata())
+        {
             None => {
                 paper.location = location.to_owned();
                 self.papers.push(paper);

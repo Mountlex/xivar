@@ -130,8 +130,7 @@ pub fn download_and_save(
     };
     lib.add(&dest, paper);
     open::that(dest)?;
-    lib.save()?;
-    Ok(())
+    lib.save()
 }
 
 pub fn open_local_otherwise_download(

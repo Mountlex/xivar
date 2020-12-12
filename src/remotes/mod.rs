@@ -120,7 +120,11 @@ pub async fn fetch_all_and_merge(lib: &Library, query: Query) -> Result<Vec<Pape
     a.append(&mut b);
     a.append(&mut c);
 
-    let mut papers: Vec<Paper> = a
+    merge_papers(a)
+}
+
+pub fn merge_papers(hits: Vec<PaperHit>) -> Result<Vec<Paper>> {
+    let mut papers: Vec<Paper> = hits
         .into_iter()
         .map(|p| (p.metadata().title.normalized(), p))
         .into_group_map()

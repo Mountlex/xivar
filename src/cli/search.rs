@@ -9,7 +9,8 @@ use anyhow::Result;
 use async_std::task;
 use clap::Clap;
 use fzf::Fzf;
-use remotes::local::Library;
+use indicatif::{ProgressBar, ProgressStyle};
+use remotes::{local::Library, Paper};
 
 #[derive(Clap, Debug)]
 pub struct Search {
@@ -24,6 +25,13 @@ pub struct Search {
 
 impl Command for Search {
     fn run(&self) -> Result<()> {
+        let spinner = ProgressBar::new_spinner();
+        spinner.set_style(
+            ProgressStyle::default_spinner().template("{msg:.bold} {spinner:.cyan/blue}"),
+        );
+        spinner.set_message("Searching");
+        spinner.enable_steady_tick(10);
+
         let query = Query::builder()
             .terms(self.search_terms.clone())
             .max_hits(self.num_hits)
@@ -31,10 +39,11 @@ impl Command for Search {
         let data_dir = config::xivar_data_dir()?;
         let mut lib = Library::open(&data_dir)?;
 
-        let fzf = Fzf::new()?;
-        let handle = fzf.fetch_and_write(remotes::fetch_all_and_merge(&lib, query));
-        task::block_on(handle)?;
+        let papers = task::block_on(remotes::fetch_all_and_merge(&lib, query))?;
+        spinner.finish_and_clear();
 
+        let mut fzf: Fzf<Paper> = Fzf::new()?;
+        fzf.write_all(papers);
         let paper = fzf.wait_for_selection()?;
         loop {
             let version = util::select_hit(paper.clone())?;
