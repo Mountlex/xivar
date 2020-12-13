@@ -30,13 +30,7 @@ pub fn select_hit(paper: Paper) -> Result<PaperHit> {
             .default(0)
             .interact_on_opt(&Term::stderr())?
         {
-            Some(i) => {
-                if i < items.len() {
-                    Ok(hits[i].clone())
-                } else {
-                    bail!("Internal error!")
-                }
-            }
+            Some(i) => Ok(hits[i].clone()),
             _ => bail!("User did not select any remote! Aborting!"),
         }
     }
