@@ -60,11 +60,7 @@ pub fn select_action_for_hit(
                 .interact_on_opt(&Term::stderr())?
             {
                 Some(i) => {
-                    if i < urls.len() {
-                        open::that(urls[i].clone())?;
-                    } else {
-                        bail!("Internal error!");
-                    }
+                    open::that(urls[i].clone())?;
                 }
                 _ => {
                     bail!("User did not select any remote! Aborting!");

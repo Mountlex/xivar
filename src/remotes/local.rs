@@ -58,7 +58,7 @@ impl Display for LocalPaper {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Library {
     papers: Vec<LocalPaper>,
     modified: bool,

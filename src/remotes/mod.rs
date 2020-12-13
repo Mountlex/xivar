@@ -7,7 +7,8 @@ use dblp::DBLPPaper;
 use local::{Library, LocalPaper};
 
 use crate::{PaperInfo, Query};
-use async_std::prelude::*;
+use async_std::task;
+use futures::future::try_join_all;
 
 pub mod arxiv;
 pub mod dblp;
@@ -108,19 +109,16 @@ pub trait Remote {
 }
 
 pub async fn fetch_all_and_merge(lib: &Library, query: Query) -> Result<Vec<Paper>> {
-    let arxiv_handle = arxiv::Arxiv::fetch(query.clone());
-    let dblp_handle = dblp::DBLP::fetch(query.clone());
-    let local_handle = async { Ok(local::get_local_hits(lib, &query)) };
+    let lib = lib.clone();
+    let mut handles = Vec::new();
+    handles.push(task::spawn(arxiv::Arxiv::fetch(query.clone())));
+    handles.push(task::spawn(dblp::DBLP::fetch(query.clone())));
+    handles.push(task::spawn(async move {
+        Ok(local::get_local_hits(&lib, &query))
+    }));
 
-    let ((mut a, mut b), mut c): ((Vec<PaperHit>, Vec<PaperHit>), Vec<PaperHit>) = arxiv_handle
-        .try_join(dblp_handle)
-        .try_join(local_handle)
-        .await?;
-
-    a.append(&mut b);
-    a.append(&mut c);
-
-    merge_papers(a)
+    let hits = try_join_all(handles).await?;
+    merge_papers(hits.into_iter().flatten().collect())
 }
 
 pub fn merge_papers(hits: Vec<PaperHit>) -> Result<Vec<Paper>> {

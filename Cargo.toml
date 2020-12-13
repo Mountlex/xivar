@@ -22,6 +22,7 @@ clap = "3.0.0-beta.2"
 surf = "2.1.0"
 dialoguer = "0.7.1"
 async-std = { version = "1.8.0", features = ["unstable"] }
+futures = "0.3.8"
 open = "1.4.0"
 itertools = "0.9.0"
 console = "0.13.0"
