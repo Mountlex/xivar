@@ -14,6 +14,7 @@ use super::util;
 use super::Command;
 
 #[derive(Clap)]
+#[clap(about = "Search your local library")]
 pub struct Local {
     search_terms: Vec<String>,
 

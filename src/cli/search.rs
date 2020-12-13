@@ -13,13 +13,24 @@ use indicatif::{ProgressBar, ProgressStyle};
 use remotes::{local::Library, Paper};
 
 #[derive(Clap, Debug)]
+#[clap(about = "Search remotes and your local library")]
 pub struct Search {
     search_terms: Vec<String>,
 
-    #[clap(short, long, parse(from_os_str))]
+    #[clap(
+        short,
+        long,
+        about = "Specify an unique download location",
+        parse(from_os_str)
+    )]
     output: Option<PathBuf>,
 
-    #[clap(short, long, default_value = "100")]
+    #[clap(
+        short,
+        long,
+        about = "Caps the number of hits from a single remote",
+        default_value = "50"
+    )]
     num_hits: u32,
 }
 

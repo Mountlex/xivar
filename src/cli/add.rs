@@ -15,6 +15,7 @@ use crate::{
 };
 
 #[derive(Clap, Debug)]
+#[clap(about = "Add a local PDF to your library")]
 pub struct Add {
     #[clap(parse(from_os_str))]
     pdf_file: PathBuf,

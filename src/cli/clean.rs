@@ -5,7 +5,8 @@ use super::Command;
 use crate::{config, remotes::local::Library};
 
 #[derive(Clap, Debug)]
-pub struct Clean {}
+#[clap(about = "Remove non-existent files from your library")]
+pub struct Clean;
 
 impl Command for Clean {
     fn run(&self) -> Result<()> {
