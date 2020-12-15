@@ -47,7 +47,7 @@ impl Remote for Arxiv {
     fn get_url(query: Query) -> String {
         format!(
             "http://export.arxiv.org/api/query?search_query={}&max_results={}",
-            query.terms.map(|t| t.join("+")).unwrap_or_default(),
+            query.terms.map(|t| t.join("+AND+")).unwrap_or_default(),
             query.max_hits
         )
     }
