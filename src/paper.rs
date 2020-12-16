@@ -24,8 +24,8 @@ pub struct PaperInfo {
 impl PaperInfo {
     pub fn matches(&self, query: &Query) -> bool {
         if let Some(ref terms) = query.terms {
-            any_match(terms.as_slice(), &self.authors.join(" "))
-                | any_match(terms.as_slice(), &self.title.normalized())
+            matches_all_terms(terms.as_slice(), &self.authors.join(" "))
+                | matches_all_terms(terms.as_slice(), &self.title.normalized())
         } else {
             true
         }
@@ -50,7 +50,7 @@ impl PaperInfo {
             .collect::<Vec<String>>()
             .join("")
             .to_lowercase();
-        format!("{}{}{}", name, self.year[2..].to_owned(), title)
+        format!("{}{}{}", name, self.year[2..].to_owned(), title).replace("/", "-")
     }
 }
 
@@ -76,13 +76,13 @@ impl PartialEq for PaperInfo {
 
 impl Eq for PaperInfo {}
 
-fn any_match(qstrings: &[String], sstring: &str) -> bool {
-    if qstrings.is_empty() {
+fn matches_all_terms(terms: &[String], text: &str) -> bool {
+    if terms.is_empty() {
         true
     } else {
-        qstrings
+        terms
             .iter()
-            .any(|s| sstring.to_lowercase().contains(&s.to_lowercase()))
+            .all(|s| text.to_lowercase().contains(&s.to_lowercase()))
     }
 }
 

@@ -7,7 +7,7 @@ use std::env;
 pub fn xivar_data_dir() -> Result<PathBuf> {
     let data_dir = match env::var_os("XIVAR_DATA_DIR") {
         Some(data_osstr) => PathBuf::from(data_osstr),
-        None => match dirs::data_local_dir() {
+        None => match dirs_next::data_local_dir() {
             Some(mut data_dir) => {
                 data_dir.push("xivar");
                 data_dir
@@ -20,7 +20,7 @@ pub fn xivar_data_dir() -> Result<PathBuf> {
 }
 
 pub fn xivar_document_dir() -> Result<PathBuf> {
-    let config_file = match dirs::config_dir() {
+    let config_file = match dirs_next::config_dir() {
         Some(mut config_dir) => {
             config_dir.push("xivar");
             config_dir.push("xivar.toml");
@@ -37,7 +37,7 @@ pub fn xivar_document_dir() -> Result<PathBuf> {
     settings.merge(config::Environment::with_prefix("XIVAR"))?;
     settings.set(
         "document_dir",
-        dirs::document_dir()
+        dirs_next::document_dir()
             .unwrap()
             .as_path()
             .as_os_str()

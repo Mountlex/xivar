@@ -1,6 +1,10 @@
 # XivAr
 
-![Rust](https://github.com/Mountlex/xivar/workflows/Rust/badge.svg?branch=main)
+[![crates.io](https://img.shields.io/crates/v/xivar.svg)](https://crates.io/crates/xivar)
+![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Mountlex/xivar/Rust)
+![actively developed](https://img.shields.io/badge/maintenance-actively--developed-brightgreen.svg)
+[![dependency status](https://deps.rs/crate/xivar/0.4.0/status.svg)](https://deps.rs/crate/xivar/0.3.1)
+![License: MIT/Apache-2.0](https://img.shields.io/crates/l/xivar.svg)
 
 Manage your local scientific library!
 
@@ -22,22 +26,16 @@ cargo install xivar
 
 ### Search
 
-Search a publication online and local
+Search a publication online and local.
 
 ```bash
 xivar search keyword1 keyword2 ...
 ```
 
-Search only locally saved files
+Search only locally saved files.
 
 ```bash
 xivar local keyword1 keyword2 ...
-```
-
-Specify a maximum number of hits (default is 100)
-
-```bash
-xivar search bla bla -n 30
 ```
 
 ### Clean
@@ -73,4 +71,5 @@ document_dir = "absolute/path/to/directory"
 
 - Update library
 - Export bib-files
+- Specify query more precisely (title, author, AND, OR etc.)
 - ...

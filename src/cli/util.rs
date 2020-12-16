@@ -52,7 +52,6 @@ pub fn download_and_save(
         config::xivar_document_dir()?.join(metadata.default_filename())
     }
     .with_extension("pdf");
-    println!("{:?}", dest);
     let spinner = indicatif::ProgressBar::new_spinner();
     spinner.set_style(
         indicatif::ProgressStyle::default_spinner().template("{msg} {spinner:.cyan/blue} "),
