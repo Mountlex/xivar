@@ -66,13 +66,13 @@ pub fn download_and_save(
             .bold()
             .to_string(),
     );
+    open::that(&dest)?;
     let paper = LocalPaper {
         metadata,
-        location: dest.clone(),
+        location: dest,
         ees: vec![download_url],
     };
-    lib.add(&dest, paper);
-    open::that(dest)?;
+    lib.add(paper);
     lib.save()
 }
 

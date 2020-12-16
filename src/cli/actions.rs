@@ -13,6 +13,8 @@ pub enum Action {
     Download(PaperUrl, PaperHit),
     OpenLocal(PathBuf),
     OpenRemote(PaperUrl, PaperHit),
+    EnterUrl(PaperHit),
+    CopyLocal(Vec<PaperUrl>, PaperHit),
     ProcessHit(PaperHit),
     SelectHit(Paper),
     Finish,
@@ -24,11 +26,13 @@ impl Display for Action {
         match self {
             Action::Download(_, _) => write!(f, "Download"),
             Action::OpenLocal(_) => write!(f, "Local"),
+            Action::EnterUrl(_) => write!(f, "Enter PDF-Url"),
+            Action::CopyLocal(_, _) => write!(f, "Enter Local PDF"),
             Action::OpenRemote(url, _) => write!(f, "{}", url),
             Action::ProcessHit(hit) => write!(f, "{}", hit.remote_tag()),
             Action::SelectHit(_) => write!(f, ""),
-            Action::Finish => write!(f, ""),
-            Action::Back => write!(f, ""),
+            Action::Finish => write!(f, "Finish"),
+            Action::Back => write!(f, "Back"),
         }
     }
 }

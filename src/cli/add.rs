@@ -87,7 +87,7 @@ impl Command for Add {
                         location: self.pdf_file.clone(),
                         ees: vec![],
                     };
-                    lib.add(&self.pdf_file, paper);
+                    lib.add(paper);
                     println!("{}", style("Added paper to library!").green().bold());
                     break;
                 }

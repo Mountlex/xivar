@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use super::{
     actions::{self, Action},
@@ -12,10 +12,14 @@ use actions::select_action;
 use anyhow::Result;
 use async_std::task;
 use clap::Clap;
-use dialoguer::{Confirm, Input};
+use console::style;
+use dialoguer::Input;
 use fzf::Fzf;
 use indicatif::{ProgressBar, ProgressStyle};
-use remotes::{local::Library, Paper, PaperHit};
+use remotes::{
+    local::{Library, LocalPaper},
+    Paper, PaperHit,
+};
 
 #[derive(Clap, Debug)]
 #[clap(about = "Search remotes and your local library")]
@@ -92,19 +96,42 @@ impl SearchAction for Action {
             }
             Action::OpenRemote(url, hit) => {
                 open::that(url.raw())?;
-                if Confirm::new()
-                    .with_prompt("Do you want to download the paper via a pdf-url?")
-                    .default(true)
-                    .interact()?
-                {
-                    if let Ok(pdf_url) = Input::new().with_prompt("PDF-Url").interact_text() {
-                        Ok(Action::Download(PaperUrl::new(pdf_url), hit))
-                    } else {
-                        Ok(Action::Finish)
-                    }
+                let actions = vec![
+                    Action::EnterUrl(hit.clone()),
+                    Action::CopyLocal(vec![url], hit.clone()),
+                    Action::Finish,
+                ];
+                select_action("Select action".to_owned(), actions)
+            }
+            Action::EnterUrl(hit) => {
+                if let Ok(pdf_url) = Input::new().with_prompt("PDF-Url").interact_text() {
+                    Ok(Action::Download(PaperUrl::new(pdf_url), hit))
                 } else {
                     Ok(Action::Finish)
                 }
+            }
+            Action::CopyLocal(ees, hit) => {
+                if let Ok(location) = Input::<String>::new()
+                    .with_prompt("Local path")
+                    .interact_text()
+                {
+                    let path = Path::new(&location);
+                    let dest =
+                        config::xivar_document_dir()?.join(hit.metadata().default_filename());
+                    std::fs::copy(path, &dest)?;
+                    println!(
+                        "{}",
+                        style(format!("Saved pdf to {:?}!", dest)).bold().green()
+                    );
+                    let paper = LocalPaper {
+                        metadata: hit.metadata().to_owned(),
+                        location: dest,
+                        ees,
+                    };
+                    lib.add(paper);
+                    lib.save()?;
+                }
+                Ok(Action::Finish)
             }
             Action::SelectHit(paper) => {
                 let mut hits = paper.0;

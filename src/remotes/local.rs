@@ -162,18 +162,17 @@ impl Library {
         Ok(())
     }
 
-    pub fn add(&mut self, location: &PathBuf, mut paper: LocalPaper) {
+    pub fn add(&mut self, paper: LocalPaper) {
         match self
             .papers
             .iter_mut()
             .find(|p| p.metadata() == paper.metadata())
         {
             None => {
-                paper.location = location.to_owned();
                 self.papers.push(paper);
             }
             Some(p) => {
-                p.location = location.to_owned();
+                p.location = paper.location;
             }
         };
         self.modified = true;
