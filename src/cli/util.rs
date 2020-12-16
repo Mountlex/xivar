@@ -36,53 +36,6 @@ pub fn select_hit(paper: Paper) -> Result<PaperHit> {
     }
 }
 
-pub fn select_action_for_hit(
-    paper: PaperHit,
-    lib: &mut Library,
-    output: Option<&PathBuf>,
-) -> Result<()> {
-    match paper {
-        PaperHit::Local(paper) => {
-            open::that(paper.location)?;
-        }
-        PaperHit::Dblp(paper) => {
-            let urls = vec![paper.ee.raw(), paper.url.raw()];
-            match Select::with_theme(&ColorfulTheme::default())
-                .items(&urls)
-                .default(0)
-                .with_prompt("Select reference")
-                .interact_on_opt(&Term::stderr())?
-            {
-                Some(i) => {
-                    open::that(urls[i].clone())?;
-                }
-                _ => {
-                    bail!("User did not select any remote! Aborting!");
-                }
-            }
-        }
-        PaperHit::Arxiv(paper) => {
-            match Select::with_theme(&ColorfulTheme::default())
-                .items(&vec!["Download", "Open online"])
-                .default(0)
-                .interact_on_opt(&Term::stderr())?
-            {
-                Some(0) => {
-                    let url = paper.download_url();
-                    download_and_save(paper.metadata().clone(), url, lib, output)?;
-                }
-                Some(1) => {
-                    open::that(paper.ee.raw())?;
-                }
-                _ => {
-                    bail!("User did not select any remote! Aborting!");
-                }
-            }
-        }
-    }
-    Ok(())
-}
-
 pub fn download_and_save(
     metadata: PaperInfo,
     download_url: PaperUrl,
@@ -99,7 +52,7 @@ pub fn download_and_save(
         config::xivar_document_dir()?.join(metadata.default_filename())
     }
     .with_extension("pdf");
-
+    println!("{:?}", dest);
     let spinner = indicatif::ProgressBar::new_spinner();
     spinner.set_style(
         indicatif::ProgressStyle::default_spinner().template("{msg} {spinner:.cyan/blue} "),

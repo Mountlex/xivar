@@ -16,7 +16,7 @@ pub mod local;
 
 use async_trait::async_trait;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PaperHit {
     Arxiv(ArxivPaper),
     Dblp(DBLPPaper),
@@ -58,7 +58,7 @@ pub trait RemoteTag {
 }
 
 #[derive(Debug, Clone)]
-pub struct Paper(Vec<PaperHit>);
+pub struct Paper(pub Vec<PaperHit>);
 
 impl Paper {
     pub fn new(hits: Vec<PaperHit>) -> Self {

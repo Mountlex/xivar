@@ -86,7 +86,11 @@ impl Remote for DBLP {
                         let authors: Vec<String> = info
                             .descendants()
                             .filter(|n| n.has_tag_name("author"))
-                            .map(|a| a.text().unwrap().replace(r"\d{4}", "").trim().to_owned())
+                            .map(|a| {
+                                let raw = a.text().unwrap();
+                                let re = regex::Regex::new(r"\d{4}").unwrap();
+                                re.replace_all(raw, "").trim().to_owned()
+                            })
                             .collect();
 
                         let ee_string = info

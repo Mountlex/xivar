@@ -93,13 +93,14 @@ impl Remote for Arxiv {
                     .children()
                     .filter(|n| n.has_tag_name("author"))
                     .map(|a| {
-                        a.children()
+                        let raw = a
+                            .children()
                             .find(|c| c.has_tag_name("name"))
                             .unwrap()
                             .text()
-                            .unwrap()
-                            .trim()
-                            .to_owned()
+                            .unwrap();
+                        let re = regex::Regex::new(r"\d{4}").unwrap();
+                        re.replace_all(raw, "").trim().to_owned()
                     })
                     .collect();
 

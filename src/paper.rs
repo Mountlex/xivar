@@ -32,7 +32,25 @@ impl PaperInfo {
     }
 
     pub fn default_filename(&self) -> String {
-        format!("{}", self.id.as_ref().unwrap()).replace(".", "-")
+        let name = self
+            .authors
+            .first()
+            .unwrap()
+            .split_whitespace()
+            .last()
+            .unwrap()
+            .to_lowercase();
+        let title = self
+            .title
+            .words
+            .clone()
+            .into_iter()
+            .take(2)
+            .map(|w| w.to_uppercase())
+            .collect::<Vec<String>>()
+            .join("")
+            .to_lowercase();
+        format!("{}{}{}", name, self.year[2..].to_owned(), title)
     }
 }
 
@@ -70,7 +88,7 @@ fn any_match(qstrings: &[String], sstring: &str) -> bool {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Hash)]
 pub struct PaperTitle {
-    words: Vec<String>,
+    pub words: Vec<String>,
 }
 
 impl PaperTitle {
