@@ -24,11 +24,26 @@ pub struct PaperInfo {
 impl PaperInfo {
     pub fn matches(&self, query: &Query) -> bool {
         if let Some(ref terms) = query.terms {
-            matches_all_terms(terms.as_slice(), &self.authors.join(" "))
-                | matches_all_terms(terms.as_slice(), &self.title.normalized())
+            if terms.is_empty() {
+                true
+            } else {
+                let info = self.single_string();
+                terms.into_iter().all(|term| info.contains(term))
+            }
         } else {
             true
         }
+    }
+
+    fn single_string(&self) -> String {
+        format!(
+            "{} {} {} {}",
+            self.title.normalized(),
+            self.authors.join(" "),
+            self.venue,
+            self.year
+        )
+        .to_lowercase()
     }
 
     pub fn default_filename(&self) -> String {
@@ -75,16 +90,6 @@ impl PartialEq for PaperInfo {
 }
 
 impl Eq for PaperInfo {}
-
-fn matches_all_terms(terms: &[String], text: &str) -> bool {
-    if terms.is_empty() {
-        true
-    } else {
-        terms
-            .iter()
-            .all(|s| text.to_lowercase().contains(&s.to_lowercase()))
-    }
-}
 
 #[derive(Debug, Serialize, Deserialize, Clone, Hash)]
 pub struct PaperTitle {
