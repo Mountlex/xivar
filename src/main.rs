@@ -1,6 +1,6 @@
 mod cli;
 mod config;
-mod fzf;
+mod finder;
 mod identifier;
 mod paper;
 mod query;

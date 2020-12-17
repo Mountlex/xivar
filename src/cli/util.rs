@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use anyhow::{anyhow, bail, Result};
 use async_std::task;
+use indicatif::{ProgressBar, ProgressStyle};
 use remotes::{
     local::{Library, LocalPaper},
     Paper, PaperHit, RemoteTag,
@@ -13,7 +14,7 @@ use console::style;
 use console::Term;
 use dialoguer::{theme::ColorfulTheme, Select};
 
-use crate::{config, fzf::Fzf, remotes, PaperInfo, PaperUrl, Query};
+use crate::{config, finder, remotes, PaperInfo, PaperUrl, Query};
 
 pub fn select_hit(paper: Paper) -> Result<PaperHit> {
     let hits = paper.hits();
@@ -100,13 +101,23 @@ pub fn open_local_otherwise_download(
     Ok(())
 }
 
-pub fn search_and_select(lib: &Library, search_string: &str) -> Result<Paper> {
-    let terms = vec![search_string.to_owned()];
-    let query = Query::builder().terms(terms).build();
-    let fzf = Fzf::new()?;
-    let handle = fzf.fetch_and_write(remotes::fetch_all_and_merge(lib, query));
-    task::block_on(handle)?;
-    fzf.wait_for_selection()
+pub fn search_and_select(
+    lib: &Library,
+    terms: Vec<String>,
+    max_hits: Option<u32>,
+) -> Result<Paper> {
+    let spinner = ProgressBar::new_spinner();
+    spinner
+        .set_style(ProgressStyle::default_spinner().template("{msg:.bold} {spinner:.cyan/blue}"));
+    spinner.set_message("Searching");
+    spinner.enable_steady_tick(10);
+
+    let query = Query::builder().terms(terms).max_hits(max_hits).build();
+
+    let papers = task::block_on(remotes::fetch_all_and_merge(&lib, query))?;
+    spinner.finish_and_clear();
+
+    finder::show_and_select(papers.into_iter())
 }
 
 pub async fn download_pdf(url: &str, out_path: &PathBuf) -> Result<()> {

@@ -45,11 +45,18 @@ pub struct Arxiv;
 
 impl Remote for Arxiv {
     fn get_url(query: Query) -> String {
-        format!(
-            "http://export.arxiv.org/api/query?search_query={}&max_results={}",
-            query.terms.map(|t| t.join("+AND+")).unwrap_or_default(),
-            query.max_hits
-        )
+        if let Some(max_hits) = query.max_hits {
+            format!(
+                "http://export.arxiv.org/api/query?search_query={}&max_results={}",
+                query.terms.map(|t| t.join("+AND+")).unwrap_or_default(),
+                max_hits
+            )
+        } else {
+            format!(
+                "http://export.arxiv.org/api/query?search_query={}",
+                query.terms.map(|t| t.join("+AND+")).unwrap_or_default(),
+            )
+        }
     }
 
     fn parse_response(response: &String) -> Result<Vec<PaperHit>> {

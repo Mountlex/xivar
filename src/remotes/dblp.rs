@@ -43,11 +43,18 @@ pub struct DBLP;
 
 impl Remote for DBLP {
     fn get_url(query: Query) -> String {
-        format!(
-            "https://dblp.org/search/publ/api?q={}&h={}",
-            query.terms.map(|t| t.join("+")).unwrap_or_default(),
-            query.max_hits
-        )
+        if let Some(max_hits) = query.max_hits {
+            format!(
+                "https://dblp.org/search/publ/api?q={}&h={}",
+                query.terms.map(|t| t.join("+")).unwrap_or_default(),
+                max_hits
+            )
+        } else {
+            format!(
+                "https://dblp.org/search/publ/api?q={}",
+                query.terms.map(|t| t.join("+")).unwrap_or_default()
+            )
+        }
     }
 
     fn parse_response(response: &String) -> Result<Vec<PaperHit>> {

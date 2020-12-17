@@ -4,21 +4,17 @@ use super::{
     actions::{self, Action},
     util, Command,
 };
-use crate::fzf;
 use crate::remotes;
-use crate::{config, PaperUrl, Query};
+use crate::{config, PaperUrl};
 
 use actions::select_action;
 use anyhow::Result;
-use async_std::task;
 use clap::Clap;
 use console::style;
 use dialoguer::Input;
-use fzf::Fzf;
-use indicatif::{ProgressBar, ProgressStyle};
 use remotes::{
     local::{Library, LocalPaper},
-    Paper, PaperHit,
+    PaperHit,
 };
 
 #[derive(Clap, Debug)]
@@ -34,37 +30,17 @@ pub struct Search {
     )]
     output: Option<PathBuf>,
 
-    #[clap(
-        short,
-        long,
-        about = "Caps the number of hits from a single remote",
-        default_value = "200"
-    )]
-    num_hits: u32,
+    #[clap(short, long, about = "Caps the number of hits from a single remote")]
+    num_hits: Option<u32>,
 }
 
 impl Command for Search {
     fn run(&self) -> Result<()> {
-        let spinner = ProgressBar::new_spinner();
-        spinner.set_style(
-            ProgressStyle::default_spinner().template("{msg:.bold} {spinner:.cyan/blue}"),
-        );
-        spinner.set_message("Searching");
-        spinner.enable_steady_tick(10);
-
-        let query = Query::builder()
-            .terms(self.search_terms.clone())
-            .max_hits(self.num_hits)
-            .build();
         let data_dir = config::xivar_data_dir()?;
         let mut lib = Library::open(&data_dir)?;
 
-        let papers = task::block_on(remotes::fetch_all_and_merge(&lib, query))?;
-        spinner.finish_and_clear();
+        let paper = util::search_and_select(&lib, self.search_terms.clone(), self.num_hits)?;
 
-        let mut fzf: Fzf<Paper> = Fzf::new()?;
-        fzf.write_all(papers);
-        let paper = fzf.wait_for_selection()?;
         let mut stack: Vec<Action> = vec![Action::SelectHit(paper)];
         while let Some(current) = stack.last().cloned() {
             match current.execute(&mut lib)? {

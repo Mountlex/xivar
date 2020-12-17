@@ -74,11 +74,15 @@ impl Command for Add {
                     Some(1) => {
                         let search_string: String =
                             Input::new().with_prompt("Query").interact_text()?;
-                        let paper = util::search_and_select(&lib, &search_string)?;
+                        let paper = util::search_and_select(&lib, vec![search_string], None)?;
                         util::select_hit(paper).map(|hit| hit.metadata().clone())
                     }
-                    Some(2) => util::search_and_select(&lib, title.as_deref().unwrap())
-                        .map(|paper| paper.metadata().clone()),
+                    Some(2) => util::search_and_select(
+                        &lib,
+                        vec![title.as_deref().unwrap().to_owned()],
+                        None,
+                    )
+                    .map(|paper| paper.metadata().clone()),
                     _ => bail!("Aborting!"),
                 };
                 if let Ok(paper_info) = paper_info {
