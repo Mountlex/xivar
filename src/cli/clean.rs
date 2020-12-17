@@ -14,10 +14,15 @@ impl Command for Clean {
         let mut lib = Library::open(&data_dir)?;
 
         let removed = lib.clean();
-        for paper in removed {
-            println!("Removed {:?}", paper.location);
-        }
 
-        lib.save()
+        if removed.is_empty() {
+            println!("Nothing to remove.");
+            Ok(())
+        } else {
+            for paper in removed {
+                println!("Removed {:?}", paper.location);
+            }
+            lib.save()
+        }
     }
 }
