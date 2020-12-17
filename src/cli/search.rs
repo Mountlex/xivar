@@ -70,7 +70,8 @@ impl Command for Search {
             match current.execute(&mut lib)? {
                 Action::Finish => break,
                 Action::Back => {
-                    stack.pop();
+                    stack.pop(); // Pop back action
+                    stack.pop(); // Pop previous "real" action
                 }
                 a => stack.push(a),
             }
