@@ -38,7 +38,7 @@ pub struct Search {
         short,
         long,
         about = "Caps the number of hits from a single remote",
-        default_value = "50"
+        default_value = "200"
     )]
     num_hits: u32,
 }
