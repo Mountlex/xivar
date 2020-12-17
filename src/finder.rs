@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::{anyhow, bail, Result};
 use skim::prelude::*;
 
 use crate::remotes::{local::LocalPaper, Paper};
@@ -40,19 +40,24 @@ where
 
     drop(tx_item); // so that skim could know when to stop waiting for more items.
 
-    let selected_items = Skim::run_with(&options, Some(rx_item))
-        .map(|out| out.selected_items)
-        .unwrap_or_else(|| Vec::new());
-
-    selected_items
-        .into_iter()
-        .nth(0)
-        .map(move |item| {
-            (*item)
-                .as_any()
-                .downcast_ref::<I>() // downcast to concrete type
-                .expect("something wrong with downcast")
-                .clone()
-        })
-        .ok_or(anyhow!("No items selected"))
+    if let Some(output) = Skim::run_with(&options, Some(rx_item)) {
+        if !output.is_abort {
+            output
+                .selected_items
+                .into_iter()
+                .nth(0)
+                .map(move |item| {
+                    (*item)
+                        .as_any()
+                        .downcast_ref::<I>() // downcast to concrete type
+                        .expect("something wrong with downcast")
+                        .clone()
+                })
+                .ok_or(anyhow!("Internal error"))
+        } else {
+            bail!("No entry selected! Aborting...")
+        }
+    } else {
+        bail!("Internal error")
+    }
 }

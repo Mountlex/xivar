@@ -10,10 +10,11 @@ pub use identifier::*;
 pub use paper::*;
 pub use query::Query;
 
-use anyhow::Result;
 use clap::Clap;
 use cli::{Cli, Command};
 
-fn main() -> Result<()> {
-    Cli::parse().run()
+fn main() {
+    if let Err(error) = Cli::parse().run() {
+        println!("{}", error);
+    }
 }
