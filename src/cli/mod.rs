@@ -18,7 +18,7 @@ pub trait Command {
 
 #[derive(Clap)]
 #[clap(
-    version = "0.3.2",
+    version = "0.4.0",
     author = "Alexander Lindermayr <alexander.lindermayr97@gmail.com>",
     about = "Manage your local scientific library!"
 )]
