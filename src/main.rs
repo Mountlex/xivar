@@ -10,7 +10,7 @@ pub use identifier::*;
 pub use paper::*;
 pub use query::Query;
 
-use clap::Clap;
+use clap::Parser;
 use cli::{Cli, Command};
 
 fn main() {

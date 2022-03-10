@@ -10,13 +10,13 @@ use clean::Clean;
 use local::Local;
 use search::Search;
 
-use clap::Clap;
+use clap::Parser;
 
 pub trait Command {
     fn run(&self) -> Result<()>;
 }
 
-#[derive(Clap)]
+#[derive(Parser, Debug)]
 #[clap(
     version = "0.4.0",
     author = "Alexander Lindermayr <alexander.lindermayr97@gmail.com>",

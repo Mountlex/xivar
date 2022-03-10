@@ -9,7 +9,7 @@ use crate::{config, PaperUrl};
 
 use actions::select_action;
 use anyhow::Result;
-use clap::Clap;
+use clap::Parser;
 use console::style;
 use dialoguer::Input;
 use remotes::{
@@ -17,20 +17,17 @@ use remotes::{
     PaperHit,
 };
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(about = "Search remotes and your local library")]
 pub struct Search {
     search_terms: Vec<String>,
 
-    #[clap(
-        short,
-        long,
-        about = "Specify an unique download location",
-        parse(from_os_str)
-    )]
+    /// Specify an unique download location
+    #[clap(short, long, parse(from_os_str))]
     output: Option<PathBuf>,
 
-    #[clap(short, long, about = "Caps the number of hits from a single remote")]
+    /// Caps the number of hits from a single remote
+    #[clap(short, long)]
     num_hits: Option<u32>,
 }
 

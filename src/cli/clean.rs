@@ -1,10 +1,10 @@
 use anyhow::Result;
-use clap::Clap;
+use clap::Parser;
 
 use super::Command;
 use crate::{config, remotes::local::Library};
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(about = "Remove non-existent files from your library")]
 pub struct Clean;
 

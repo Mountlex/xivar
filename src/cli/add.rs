@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use anyhow::{bail, Result};
-use clap::Clap;
+use clap::Parser;
 use console::{style, Term};
 use dialoguer::{theme::ColorfulTheme, Confirm, Input, Select};
 use lopdf::{Document, Object};
@@ -14,7 +14,7 @@ use crate::{
     Identifier, PaperInfo, PaperTitle, Query,
 };
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(about = "Add a local PDF to your library")]
 pub struct Add {
     #[clap(parse(from_os_str))]

@@ -1,14 +1,14 @@
 use std::path::PathBuf;
 
 use anyhow::Result;
-use clap::Clap;
+use clap::Parser;
 
 use crate::{config, finder, remotes::local::Library, Query};
 
 use super::util;
 use super::Command;
 
-#[derive(Clap)]
+#[derive(Parser, Debug)]
 #[clap(about = "Search your local library")]
 pub struct Local {
     search_terms: Vec<String>,

@@ -61,7 +61,7 @@ pub fn download_and_save(
     spinner.enable_steady_tick(10);
     task::block_on(download_pdf(&download_url.raw(), &dest))?;
     spinner.abandon_with_message(
-        &style(format!("Saved file to {:?}!", dest))
+        style(format!("Saved file to {:?}!", dest))
             .green()
             .bold()
             .to_string(),
