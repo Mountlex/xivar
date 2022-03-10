@@ -1,12 +1,14 @@
 mod actions;
 mod add;
 mod clean;
+mod interactive;
 mod local;
 mod search;
 pub mod util;
 
 use anyhow::Result;
 use clean::Clean;
+use interactive::Interactive;
 use local::Local;
 use search::Search;
 
@@ -24,6 +26,7 @@ pub trait Command {
 )]
 pub enum Cli {
     Search(Search),
+    Interactive(Interactive),
     Clean(Clean),
     Local(Local),
     Add(add::Add),
@@ -32,6 +35,7 @@ pub enum Cli {
 impl Command for Cli {
     fn run(&self) -> Result<()> {
         match self {
+            Cli::Interactive(cmd) => cmd.run(),
             Cli::Search(cmd) => cmd.run(),
             Cli::Clean(cmd) => cmd.run(),
             Cli::Local(cmd) => cmd.run(),
