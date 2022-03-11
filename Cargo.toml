@@ -34,3 +34,6 @@ async-trait = "0.1.52"
 skim = "0.9.3"
 proc-macro2 = "1.0.36"
 termion = "1.5.6"
+log = "0.4.11"
+chrono = "0.4"
+fern = { version = "0.6.0", features = ["colored"] }
