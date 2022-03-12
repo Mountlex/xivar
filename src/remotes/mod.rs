@@ -94,14 +94,11 @@ impl Display for Paper {
 #[async_trait]
 pub trait Remote {
     async fn fetch(query: Query) -> Result<Vec<PaperHit>> {
-        log::warn!("reqwest...");
         let response = reqwest::get(Self::get_url(query))
             .await
             .map_err(|err| anyhow!(err))?;
-        log::warn!("json...");
         let body = response.text().await.map_err(|err| anyhow!(err))?;
         // std::fs::write("response.xml", body.clone()).expect("Unable to write file");
-        log::warn!("parsing");
         Self::parse_response(&body)
     }
 

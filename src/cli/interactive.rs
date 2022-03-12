@@ -1,5 +1,5 @@
 use crate::{
-    remotes::{self, Paper, PaperHit, Remote},
+    remotes::{self, PaperHit, Remote},
     Query,
 };
 use anyhow::Result;
@@ -47,24 +47,11 @@ async fn fetch(search_string: String) -> Result<FetchResult> {
 pub async fn interactive() -> Result<()> {
     let mut stdout = std::io::stdout().into_raw_mode()?;
     write!(stdout, "{}{} ", cursor::Goto(1, 1), clear::All)?;
+    let mut data = StateData::new();
+    print_results(&mut stdout, &data)?;
 
     let (stdin_tx, mut stdin_rx) = tokio::sync::mpsc::channel(32);
-
-    let (query_tx, mut query_rx) = tokio::sync::mpsc::channel::<String>(1);
-    let (fetch_tx, mut fetch_rx) = tokio::sync::mpsc::channel::<FetchResult>(1);
-
-    let mut data = StateData::new();
-
-    tokio::task::spawn(async move {
-        while let Some(query) = (&mut query_rx).recv().await {
-            if let Ok(fetch_res) = fetch(query).await {
-                log::warn!("fetched hits! sending..");
-                (&fetch_tx).send(fetch_res).await.unwrap();
-            }
-        }
-    });
-
-    tokio::task::spawn_blocking(move || {
+    let input_handle = tokio::task::spawn_blocking(move || {
         while let Some(key) = std::io::stdin().keys().next() {
             if let Ok(key) = key {
                 stdin_tx.blocking_send(key).unwrap();
@@ -79,69 +66,85 @@ pub async fn interactive() -> Result<()> {
                     log::warn!("key pressed {:?}", key);
 
                     if let Some(action) = handle_key(key, &mut data) {
-                        write!(
-                            std::io::stdout(),
-                                  "{hide}{goto}{clear}Search: {}",
-                                         data.search_term,
-                                         hide = cursor::Hide,
-                                         goto = cursor::Goto(1, 1),
-                                         clear = clear::CurrentLine
-                                     )
-                                     .ok();
-                                     std::io::stdout().flush().ok();
+
                         match action {
-                            Action::UpdateSearch => {
-                                if !data.search_term.is_empty() {
-                                    info(&String::from("Searching..."));
-                                    if query_tx.capacity() > 0 {
-                                        query_tx.try_send(data.search_term.to_string()).unwrap();
-                                    }
-                                }
-                            }
-                            Action::UpdateSelection => {
-                                 log::warn!("Update selection");
-                                 print_results(&data.hits, &data.search_term, data.selected)?;
+                            Action::Update => {
+                                print_results(&mut stdout, &data)?;
                              }
-                            Action::Quit => break,
-                            _ => {}
+                            Action::Quit => {
+                                log::warn!("Quitting!");
+                                break;
+                            },
                         }
                     }
 
                 }
             },
-            fetch_res = (&mut fetch_rx).recv() => {
-                if let Some(fetch_res) = fetch_res {
-                    log::warn!("received hits! printing...");
-                    print_results(&fetch_res.hits, &data.search_term, None)?;
-                    if fetch_res.used_term != data.search_term {
-                        query_tx.try_send(data.search_term.to_string()).unwrap();
-                    }
+            fetch_res = fetch(data.search_term.clone()), if data.state == State::Searching => {
+                if let Ok(fetch_res) = fetch_res {
+                    let num_hits = fetch_res.hits.len();
                     (&mut data).hits = fetch_res.hits;
-
+                    print_results(&mut stdout, &data)?;
+                    if fetch_res.used_term == data.search_term {
+                        data.state = State::Idle;
+                        info(&format!("Found {} results!", num_hits));
+                    }
                 }
-                // REDO if search term changed
             }
         }
     }
 
+    input_handle.abort();
     write!(
-        std::io::stdout(),
+        stdout,
         "{}{}{}",
         cursor::Goto(1, 1),
         cursor::Show,
         clear::All
     )
     .ok();
+    stdout.flush()?;
 
     Ok(())
 }
 
-fn print_results(results: &[PaperHit], search_term: &str, selected: Option<u16>) -> Result<()> {
-    let (width, height) = termion::terminal_size().unwrap_or((80, 20));
-    for (i, paper) in results.into_iter().enumerate().take(10) {
-        if Some(i as u16) == selected {
+fn print_results<W: std::io::Write>(writer: &mut W, data: &StateData) -> Result<()> {
+    write!(
+        writer,
+        "{hide}{goto}{clear}",
+        hide = cursor::Hide,
+        goto = cursor::Goto(1, 4),
+        clear = clear::AfterCursor
+    )
+    .ok();
+    //let (width, height) = termion::terminal_size().unwrap_or((80, 20));
+
+    write!(
+        writer,
+        "{hide}{goto}{clear}Search: {}",
+        data.search_term,
+        hide = cursor::Hide,
+        goto = cursor::Goto(1, 1),
+        clear = clear::CurrentLine
+    )
+    .ok();
+
+    match data.state {
+        State::Searching => info(&String::from("Searching...")),
+        State::Scrolling => info(&String::from("Scrolling...")),
+        State::Idle => {
+            if data.hits.len() > 0 {
+                info(&format!("Found {} results!", data.hits.len()));
+            } else {
+                info(&String::from(""));
+            }
+        }
+    }
+
+    for (i, paper) in data.hits.iter().enumerate().take(10) {
+        if Some(i as u16) == data.selected {
             write!(
-                std::io::stdout(),
+                writer,
                 "{hide}{goto}{clear}{color}{}",
                 paper,
                 hide = cursor::Hide,
@@ -151,7 +154,7 @@ fn print_results(results: &[PaperHit], search_term: &str, selected: Option<u16>)
             )?;
         } else {
             write!(
-                std::io::stdout(),
+                writer,
                 "{hide}{goto}{clear}{}",
                 paper,
                 hide = cursor::Hide,
@@ -160,7 +163,7 @@ fn print_results(results: &[PaperHit], search_term: &str, selected: Option<u16>)
             )?;
         }
     }
-    std::io::stdout().flush()?;
+    writer.flush()?;
     Ok(())
 }
 
@@ -168,19 +171,30 @@ fn handle_key(key: Key, data: &mut StateData) -> Option<Action> {
     let current_state = data.state.clone();
     match (key, current_state) {
         (Key::Esc | Key::Ctrl('c'), _) => Some(Action::Quit),
+        (Key::Char(c), State::Idle) => {
+            data.search_term.push(c);
+            data.state = State::Searching;
+            Some(Action::Update)
+        }
         (Key::Char(c), State::Searching) => {
             data.search_term.push(c);
-            Some(Action::UpdateSearch)
+            Some(Action::Update)
         }
-        (Key::Backspace, State::Searching) => {
+        (Key::Backspace, State::Searching | State::Idle) => {
             data.search_term.pop();
-            Some(Action::UpdateSearch)
+            if data.search_term.is_empty() {
+                data.state = State::Idle;
+                data.hits.clear();
+            } else {
+                data.state = State::Searching;
+            }
+            Some(Action::Update)
         }
-        (Key::Down, State::Searching) => {
+        (Key::Down, State::Idle) => {
             if data.hits.len() > 0 {
                 data.selected = Some(0);
                 data.state = State::Scrolling;
-                Some(Action::UpdateSelection)
+                Some(Action::Update)
             } else {
                 None
             }
@@ -190,24 +204,24 @@ fn handle_key(key: Key, data: &mut StateData) -> Option<Action> {
             if i < data.hits.len() as u16 - 1 {
                 *data.selected.as_mut().unwrap() = i + 1;
             }
-            Some(Action::UpdateSelection)
+            Some(Action::Update)
         }
         (Key::Up, State::Scrolling) => {
             let i = data.selected.unwrap();
             if i > 0 {
                 *data.selected.as_mut().unwrap() = i - 1;
             } else {
-                data.state = State::Searching;
+                data.state = State::Idle;
                 data.selected = None;
             }
-            Some(Action::UpdateSelection)
+            Some(Action::Update)
         }
         (Key::Char('s'), State::Scrolling) => {
-            data.state = State::Searching;
+            data.state = State::Idle;
             data.selected = None;
-            Some(Action::UpdateSelection)
+            Some(Action::Update)
         }
-        (_, _) => Some(Action::Quit),
+        _ => Some(Action::Quit),
     }
 }
 
@@ -225,39 +239,24 @@ impl StateData {
             search_term: String::new(),
             selected: None,
             hits: vec![],
-            state: State::Searching,
+            state: State::Idle,
         }
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 enum State {
+    Idle,
     Searching,
-    Displaying,
     Scrolling,
 }
 
 enum Action {
-    UpdateSearch,
-    ToSearch,
-    UpdateSelection,
-    ToScroll,
+    Update,
     Quit,
 }
 
-fn clear_results() {
-    write!(
-        std::io::stdout(),
-        "{hide}{goto}{clear}",
-        hide = cursor::Hide,
-        goto = cursor::Goto(1, 2),
-        clear = clear::AfterCursor
-    )
-    .ok();
-    std::io::stdout().flush().ok();
-}
-
-fn info<I: Display>(item: &I) -> usize {
+fn info<I: Display>(item: &I) {
     let buf = format!("{}", item);
     write!(
         std::io::stdout(),
@@ -269,5 +268,4 @@ fn info<I: Display>(item: &I) -> usize {
     )
     .ok();
     std::io::stdout().flush().ok();
-    buf.len()
 }
