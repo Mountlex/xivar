@@ -11,14 +11,21 @@ pub use paper::*;
 pub use query::Query;
 
 use clap::Parser;
-use cli::{Cli, Command};
+use cli::{interactive, Cli, Command};
 
-fn main() {
+// fn main() {
+//     set_up_logging();
+//     if let Err(error) = Cli::parse().run() {
+//         println!("{}", error);
+//     }
+// }
+
+#[tokio::main]
+async fn main() {
     set_up_logging();
-    if let Err(error) = Cli::parse().run() {
-        println!("{}", error);
-    }
+    interactive().await;
 }
+
 fn set_up_logging() -> Result<(), fern::InitError> {
     std::fs::create_dir_all("logs")?;
     fern::Dispatch::new()

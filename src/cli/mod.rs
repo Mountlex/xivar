@@ -13,7 +13,7 @@ use local::Local;
 use search::Search;
 
 use clap::Parser;
-
+pub use interactive::interactive;
 pub trait Command {
     fn run(&self) -> Result<()>;
 }

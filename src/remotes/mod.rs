@@ -7,7 +7,6 @@ use dblp::DBLPPaper;
 use local::{Library, LocalPaper};
 
 use crate::{PaperInfo, Query};
-use async_std::task;
 use futures::future::try_join_all;
 
 pub mod arxiv;
@@ -95,11 +94,14 @@ impl Display for Paper {
 #[async_trait]
 pub trait Remote {
     async fn fetch(query: Query) -> Result<Vec<PaperHit>> {
-        let mut response = surf::get(Self::get_url(query))
+        log::warn!("reqwest...");
+        let response = reqwest::get(Self::get_url(query))
             .await
             .map_err(|err| anyhow!(err))?;
-        let body = response.body_string().await.map_err(|err| anyhow!(err))?;
+        log::warn!("json...");
+        let body = response.text().await.map_err(|err| anyhow!(err))?;
         // std::fs::write("response.xml", body.clone()).expect("Unable to write file");
+        log::warn!("parsing");
         Self::parse_response(&body)
     }
 
@@ -111,14 +113,15 @@ pub trait Remote {
 pub async fn fetch_all_and_merge(lib: &Library, query: Query) -> Result<Vec<Paper>> {
     let lib = lib.clone();
     let mut handles = Vec::new();
-    handles.push(task::spawn(arxiv::Arxiv::fetch(query.clone())));
-    handles.push(task::spawn(dblp::DBLP::fetch(query.clone())));
-    handles.push(task::spawn(async move {
+    handles.push(tokio::spawn(arxiv::Arxiv::fetch(query.clone())));
+    handles.push(tokio::spawn(dblp::DBLP::fetch(query.clone())));
+    handles.push(tokio::spawn(async move {
         Ok(local::get_local_hits(&lib, &query))
     }));
 
-    let hits = try_join_all(handles).await?;
-    merge_papers(hits.into_iter().flatten().collect())
+    //let hits = vec![]; //: Vec<Result<Vec<PaperHit>>> = futures::future::try_join_all(handles).await?;
+    //merge_papers(hits.into_iter().flatten().collect())
+    Ok(vec![])
 }
 
 pub fn merge_papers(hits: Vec<PaperHit>) -> Result<Vec<Paper>> {

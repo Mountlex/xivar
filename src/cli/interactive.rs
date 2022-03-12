@@ -1,15 +1,8 @@
 use crate::{
-    remotes::{self, PaperHit, Remote},
+    remotes::{self, Paper, PaperHit, Remote},
     Query,
 };
 use anyhow::Result;
-use async_std::{
-    channel::{Receiver, Sender},
-    task,
-};
-use log::warn;
-
-use std::sync::{Arc, Mutex, RwLock};
 
 use clap::Parser;
 use std::{fmt::Display, io::Write};
@@ -23,102 +16,124 @@ pub struct Interactive {}
 
 impl Command for Interactive {
     fn run(&self) -> Result<()> {
-        let mut stdin = std::io::stdin().keys();
-        let mut stdout = std::io::stdout().into_raw_mode()?;
-        let (command_sender, command_receiver): (Sender<String>, Receiver<String>) =
-            async_std::channel::unbounded();
-
-        let (hit_sender, hit_receiver): (Sender<Vec<PaperHit>>, Receiver<Vec<PaperHit>>) =
-            async_std::channel::unbounded();
-
-        let mut data = StateData::new();
-
-        write!(stdout, "{}{} ", cursor::Goto(1, 1), clear::All)?;
-
-        let task_rec = command_receiver.clone();
-        task::spawn(async move {
-            while let Ok(search_string) = task_rec.recv().await {
-                let query = Query::builder().terms(vec![search_string.clone()]).build();
-                let hits = remotes::dblp::DBLP::fetch(query).await;
-                if let Ok(hits) = hits {
-                    print_results(&hits, &search_string, None);
-                    hit_sender.send(hits).await;
-                    // let n = hits.len();
-                    // for (i, hit) in hits.into_iter().enumerate().take(5) {
-                    //     write!(
-                    //         std::io::stdout(),
-                    //         "{hide}{goto}{clear}{}",
-                    //         hit,
-                    //         hide = cursor::Hide,
-                    //         goto = cursor::Goto(1, i as u16 + 4),
-                    //         clear = clear::CurrentLine
-                    //     )
-                    //     .ok();
-                    // }
-
-                    // info(&format!("Found {} results!", n));
-
-                    // std::io::stdout().flush().ok();
-                }
-            }
-        });
-
-        loop {
-            let k = stdin.next();
-
-            if let Some(Ok(key)) = k {
-                while let Ok(hits) = hit_receiver.try_recv() {
-                    log::warn!("Fetched {} hits", hits.len());
-                    data.hits = hits;
-                }
-                log::warn!("Pressed key {:?}", key);
-                let action = handle_key(key, &mut data);
-                write!(
-                    std::io::stdout(),
-                    "{hide}{goto}{clear}Search: {}",
-                    data.search_term,
-                    hide = cursor::Hide,
-                    goto = cursor::Goto(1, 1),
-                    clear = clear::CurrentLine
-                )
-                .ok();
-                std::io::stdout().flush().ok();
-
-                log::warn!("Current state {:?}", data.state);
-
-                if let Some(action) = action {
-                    match action {
-                        Action::UpdateSearch => {
-                            while let Ok(_) = command_receiver.try_recv() {}
-                            if !data.search_term.is_empty() {
-                                info(&String::from("Searching..."));
-                                command_sender.try_send(data.search_term.clone())?
-                            } else {
-                                clear_results()
-                            }
-                        }
-                        Action::UpdateSelection => {
-                            log::warn!("Update selection");
-                            print_results(&data.hits, &data.search_term, data.selected);
-                        }
-                        Action::Quit => break,
-                        _ => {}
-                    }
-                }
-            }
-        }
-
-        write!(
-            std::io::stdout(),
-            "{}{}{}",
-            cursor::Goto(1, 1),
-            cursor::Show,
-            clear::All
-        )
-        .ok();
-
         Ok(())
     }
+}
+
+#[derive(Debug)]
+struct FetchResult {
+    used_term: String,
+    hits: Vec<PaperHit>,
+}
+
+async fn fetch(search_string: String) -> Result<FetchResult> {
+    if search_string.is_empty() {
+        return Ok(FetchResult {
+            used_term: search_string,
+            hits: vec![],
+        });
+    }
+    log::warn!("fetching {}!", search_string);
+    let query = Query::builder()
+        .terms(vec![search_string.to_string()])
+        .build();
+    let hits = remotes::dblp::DBLP::fetch(query).await?;
+    Ok(FetchResult {
+        used_term: search_string,
+        hits,
+    })
+}
+
+pub async fn interactive() -> Result<()> {
+    let mut stdout = std::io::stdout().into_raw_mode()?;
+    write!(stdout, "{}{} ", cursor::Goto(1, 1), clear::All)?;
+
+    let (stdin_tx, mut stdin_rx) = tokio::sync::mpsc::channel(32);
+
+    let (query_tx, mut query_rx) = tokio::sync::mpsc::channel::<String>(1);
+    let (fetch_tx, mut fetch_rx) = tokio::sync::mpsc::channel::<FetchResult>(1);
+
+    let mut data = StateData::new();
+
+    tokio::task::spawn(async move {
+        while let Some(query) = (&mut query_rx).recv().await {
+            if let Ok(fetch_res) = fetch(query).await {
+                log::warn!("fetched hits! sending..");
+                (&fetch_tx).send(fetch_res).await.unwrap();
+            }
+        }
+    });
+
+    tokio::task::spawn_blocking(move || {
+        while let Some(key) = std::io::stdin().keys().next() {
+            if let Ok(key) = key {
+                stdin_tx.blocking_send(key).unwrap();
+            }
+        }
+    });
+
+    loop {
+        tokio::select! {
+            key = (&mut stdin_rx).recv() => {
+                if let Some(key) = key {
+                    log::warn!("key pressed {:?}", key);
+
+                    if let Some(action) = handle_key(key, &mut data) {
+                        write!(
+                            std::io::stdout(),
+                                  "{hide}{goto}{clear}Search: {}",
+                                         data.search_term,
+                                         hide = cursor::Hide,
+                                         goto = cursor::Goto(1, 1),
+                                         clear = clear::CurrentLine
+                                     )
+                                     .ok();
+                                     std::io::stdout().flush().ok();
+                        match action {
+                            Action::UpdateSearch => {
+                                if !data.search_term.is_empty() {
+                                    info(&String::from("Searching..."));
+                                    if query_tx.capacity() > 0 {
+                                        query_tx.try_send(data.search_term.to_string()).unwrap();
+                                    }
+                                }
+                            }
+                            Action::UpdateSelection => {
+                                 log::warn!("Update selection");
+                                 print_results(&data.hits, &data.search_term, data.selected)?;
+                             }
+                            Action::Quit => break,
+                            _ => {}
+                        }
+                    }
+
+                }
+            },
+            fetch_res = (&mut fetch_rx).recv() => {
+                if let Some(fetch_res) = fetch_res {
+                    log::warn!("received hits! printing...");
+                    print_results(&fetch_res.hits, &data.search_term, None)?;
+                    if fetch_res.used_term != data.search_term {
+                        query_tx.try_send(data.search_term.to_string()).unwrap();
+                    }
+                    (&mut data).hits = fetch_res.hits;
+
+                }
+                // REDO if search term changed
+            }
+        }
+    }
+
+    write!(
+        std::io::stdout(),
+        "{}{}{}",
+        cursor::Goto(1, 1),
+        cursor::Show,
+        clear::All
+    )
+    .ok();
+
+    Ok(())
 }
 
 fn print_results(results: &[PaperHit], search_term: &str, selected: Option<u16>) -> Result<()> {
@@ -150,8 +165,8 @@ fn print_results(results: &[PaperHit], search_term: &str, selected: Option<u16>)
 }
 
 fn handle_key(key: Key, data: &mut StateData) -> Option<Action> {
-    let state = data.state.clone();
-    match (key, state) {
+    let current_state = data.state.clone();
+    match (key, current_state) {
         (Key::Esc | Key::Ctrl('c'), _) => Some(Action::Quit),
         (Key::Char(c), State::Searching) => {
             data.search_term.push(c);
@@ -193,14 +208,6 @@ fn handle_key(key: Key, data: &mut StateData) -> Option<Action> {
             Some(Action::UpdateSelection)
         }
         (_, _) => Some(Action::Quit),
-    }
-}
-
-fn update_state(action: &Action, state: &mut State) {
-    match action {
-        Action::ToScroll => *state = State::Scrolling,
-        Action::ToSearch => *state = State::Searching,
-        _ => {}
     }
 }
 

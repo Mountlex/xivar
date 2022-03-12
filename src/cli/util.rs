@@ -1,7 +1,6 @@
 use std::path::PathBuf;
 
 use anyhow::{anyhow, bail, Result};
-use async_std::task;
 use indicatif::{ProgressBar, ProgressStyle};
 use remotes::{
     local::{Library, LocalPaper},
@@ -59,7 +58,7 @@ pub fn download_and_save(
     );
     spinner.set_message("Downloading");
     spinner.enable_steady_tick(10);
-    task::block_on(download_pdf(&download_url.raw(), &dest))?;
+    //tokio::task::spawn(download_pdf(&download_url.raw(), &dest));
     spinner.abandon_with_message(
         style(format!("Saved file to {:?}!", dest))
             .green()
@@ -114,15 +113,15 @@ pub fn search_and_select(
 
     let query = Query::builder().terms(terms).max_hits(max_hits).build();
 
-    let papers = task::block_on(remotes::fetch_all_and_merge(&lib, query))?;
+    let papers = vec![]; //= tokio::task::spawn(remotes::fetch_all_and_merge(&lib, query);
     spinner.finish_and_clear();
 
     finder::show_and_select(papers.into_iter())
 }
 
 pub async fn download_pdf(url: &str, out_path: &PathBuf) -> Result<()> {
-    let mut response = surf::get(&url).await.map_err(|err| anyhow!(err))?;
-    let body = response.body_bytes().await.map_err(|err| anyhow!(err))?;
+    let response = reqwest::get(&*url).await.map_err(|err| anyhow!(err))?;
+    let body = response.bytes().await.map_err(|err| anyhow!(err))?;
     let mut file = std::fs::File::create(out_path.with_extension("pdf"))?;
     file.write_all(&body)?;
     Ok(())
