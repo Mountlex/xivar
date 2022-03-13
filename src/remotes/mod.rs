@@ -7,7 +7,6 @@ use dblp::DBLPPaper;
 use local::{Library, LocalPaper};
 
 use crate::{PaperInfo, Query};
-use futures::future::try_join_all;
 
 pub mod arxiv;
 pub mod dblp;
@@ -107,8 +106,9 @@ pub trait Remote {
     fn parse_response(response: &String) -> Result<Vec<PaperHit>>;
 }
 
-pub async fn fetch_all_and_merge(lib: &Library, query: Query) -> Result<Vec<Paper>> {
-    let lib = lib.clone();
+pub async fn fetch_all_and_merge(query: Query) -> Result<Vec<Paper>> {
+    let data_dir = crate::config::xivar_data_dir()?;
+    let lib = Library::open(&data_dir)?;
     let mut handles = Vec::new();
     handles.push(tokio::spawn(arxiv::Arxiv::fetch(query.clone())));
     handles.push(tokio::spawn(dblp::DBLP::fetch(query.clone())));
@@ -116,14 +116,12 @@ pub async fn fetch_all_and_merge(lib: &Library, query: Query) -> Result<Vec<Pape
         Ok(local::get_local_hits(&lib, &query))
     }));
 
-    //let hits = vec![]; //: Vec<Result<Vec<PaperHit>>> = futures::future::try_join_all(handles).await?;
-    //merge_papers(hits.into_iter().flatten().collect())
-    Ok(vec![])
+    let hits: Vec<Result<Vec<PaperHit>>> = futures::future::try_join_all(handles).await?;
+    merge_papers(hits.into_iter().flatten().flatten())
 }
 
-pub fn merge_papers(hits: Vec<PaperHit>) -> Result<Vec<Paper>> {
+pub fn merge_papers<I: Iterator<Item = PaperHit>>(hits: I) -> Result<Vec<Paper>> {
     let mut papers: Vec<Paper> = hits
-        .into_iter()
         .map(|p| (p.metadata().title.normalized(), p))
         .into_group_map()
         .into_iter()

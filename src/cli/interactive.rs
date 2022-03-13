@@ -1,5 +1,5 @@
 use crate::{
-    remotes::{self, PaperHit, Remote},
+    remotes::{self, Paper, Remote},
     Query,
 };
 use anyhow::Result;
@@ -23,7 +23,7 @@ impl Command for Interactive {
 #[derive(Debug)]
 struct FetchResult {
     used_term: String,
-    hits: Vec<PaperHit>,
+    hits: Vec<Paper>,
 }
 
 async fn fetch(search_string: String) -> Result<FetchResult> {
@@ -37,7 +37,7 @@ async fn fetch(search_string: String) -> Result<FetchResult> {
     let query = Query::builder()
         .terms(vec![search_string.to_string()])
         .build();
-    let hits = remotes::dblp::DBLP::fetch(query).await?;
+    let hits = remotes::fetch_all_and_merge(query).await?;
     Ok(FetchResult {
         used_term: search_string,
         hits,
@@ -68,9 +68,13 @@ pub async fn interactive() -> Result<()> {
                     if let Some(action) = handle_key(key, &mut data) {
 
                         match action {
-                            Action::Update => {
+                            Action::UpdateSearch => {
                                 print_results(&mut stdout, &data)?;
-                             }
+                            },
+                            Action::Reprint => {
+                                print_results(&mut stdout, &data)?;
+
+                            }
                             Action::Quit => {
                                 log::warn!("Quitting!");
                                 break;
@@ -82,13 +86,11 @@ pub async fn interactive() -> Result<()> {
             },
             fetch_res = fetch(data.search_term.clone()), if data.state == State::Searching => {
                 if let Ok(fetch_res) = fetch_res {
-                    let num_hits = fetch_res.hits.len();
                     (&mut data).hits = fetch_res.hits;
-                    print_results(&mut stdout, &data)?;
                     if fetch_res.used_term == data.search_term {
                         data.state = State::Idle;
-                        info(&format!("Found {} results!", num_hits));
                     }
+                    print_results(&mut stdout, &data)?;
                 }
             }
         }
@@ -117,7 +119,7 @@ fn print_results<W: std::io::Write>(writer: &mut W, data: &StateData) -> Result<
         clear = clear::AfterCursor
     )
     .ok();
-    //let (width, height) = termion::terminal_size().unwrap_or((80, 20));
+    let (width, height) = termion::terminal_size().unwrap_or((80, 20));
 
     write!(
         writer,
@@ -141,7 +143,7 @@ fn print_results<W: std::io::Write>(writer: &mut W, data: &StateData) -> Result<
         }
     }
 
-    for (i, paper) in data.hits.iter().enumerate().take(10) {
+    for (i, paper) in data.hits.iter().enumerate().take((height - 5) as usize) {
         if Some(i as u16) == data.selected {
             write!(
                 writer,
@@ -174,11 +176,11 @@ fn handle_key(key: Key, data: &mut StateData) -> Option<Action> {
         (Key::Char(c), State::Idle) => {
             data.search_term.push(c);
             data.state = State::Searching;
-            Some(Action::Update)
+            Some(Action::UpdateSearch)
         }
         (Key::Char(c), State::Searching) => {
             data.search_term.push(c);
-            Some(Action::Update)
+            Some(Action::UpdateSearch)
         }
         (Key::Backspace, State::Searching | State::Idle) => {
             data.search_term.pop();
@@ -188,13 +190,13 @@ fn handle_key(key: Key, data: &mut StateData) -> Option<Action> {
             } else {
                 data.state = State::Searching;
             }
-            Some(Action::Update)
+            Some(Action::UpdateSearch)
         }
         (Key::Down, State::Idle) => {
             if data.hits.len() > 0 {
                 data.selected = Some(0);
                 data.state = State::Scrolling;
-                Some(Action::Update)
+                Some(Action::Reprint)
             } else {
                 None
             }
@@ -204,7 +206,7 @@ fn handle_key(key: Key, data: &mut StateData) -> Option<Action> {
             if i < data.hits.len() as u16 - 1 {
                 *data.selected.as_mut().unwrap() = i + 1;
             }
-            Some(Action::Update)
+            Some(Action::Reprint)
         }
         (Key::Up, State::Scrolling) => {
             let i = data.selected.unwrap();
@@ -214,14 +216,14 @@ fn handle_key(key: Key, data: &mut StateData) -> Option<Action> {
                 data.state = State::Idle;
                 data.selected = None;
             }
-            Some(Action::Update)
+            Some(Action::Reprint)
         }
         (Key::Char('s'), State::Scrolling) => {
             data.state = State::Idle;
             data.selected = None;
-            Some(Action::Update)
+            Some(Action::Reprint)
         }
-        _ => Some(Action::Quit),
+        _ => None,
     }
 }
 
@@ -229,7 +231,7 @@ fn handle_key(key: Key, data: &mut StateData) -> Option<Action> {
 struct StateData {
     search_term: String,
     selected: Option<u16>,
-    hits: Vec<PaperHit>,
+    hits: Vec<Paper>,
     state: State,
 }
 
@@ -252,7 +254,8 @@ enum State {
 }
 
 enum Action {
-    Update,
+    UpdateSearch,
+    Reprint,
     Quit,
 }
 
