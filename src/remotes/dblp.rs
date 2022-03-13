@@ -5,7 +5,7 @@ use console::style;
 
 use crate::{ArxivIdentifier, Doi, Identifier, PaperInfo, PaperTitle, PaperUrl, Query};
 
-use super::{PaperHit, Remote, RemoteTag};
+use super::{OnlineRemote, PaperHit, Remote, RemoteTag};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct DBLPPaper {
@@ -39,9 +39,10 @@ impl Display for DBLPPaper {
     }
 }
 
+#[derive(Clone)]
 pub struct DBLP;
 
-impl Remote for DBLP {
+impl OnlineRemote for DBLP {
     fn get_url(query: Query) -> String {
         if let Some(max_hits) = query.max_hits {
             format!(

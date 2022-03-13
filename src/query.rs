@@ -8,6 +8,18 @@ impl Query {
     pub fn builder() -> QueryBuilder {
         QueryBuilder::new()
     }
+
+    pub fn empty() -> Query {
+        Query {
+            terms: None,
+            max_hits: None,
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        // TODO
+        self.terms.is_none() || self.terms.as_ref().unwrap().is_empty()
+    }
 }
 
 pub struct QueryBuilder {

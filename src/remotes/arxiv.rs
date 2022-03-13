@@ -5,7 +5,7 @@ use console::style;
 
 use crate::{ArxivIdentifier, Identifier, PaperInfo, PaperTitle, PaperUrl, Query};
 
-use super::{PaperHit, Remote, RemoteTag};
+use super::{OnlineRemote, PaperHit, Remote, RemoteTag};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ArxivPaper {
@@ -41,9 +41,10 @@ impl Display for ArxivPaper {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct Arxiv;
 
-impl Remote for Arxiv {
+impl OnlineRemote for Arxiv {
     fn get_url(query: Query) -> String {
         if let Some(max_hits) = query.max_hits {
             format!(

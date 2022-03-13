@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use console::style;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -15,7 +16,7 @@ use crate::{PaperInfo, PaperUrl};
 use anyhow::{bail, Context, Result};
 use bincode::Options;
 
-use super::{PaperHit, RemoteTag};
+use super::{PaperHit, Remote, RemoteTag};
 
 pub fn get_local_hits(lib: &Library, query: &Query) -> Vec<PaperHit> {
     lib.iter_matches(query)
@@ -55,6 +56,26 @@ impl RemoteTag for LocalPaper {
 impl Display for LocalPaper {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{} {}", self.metadata, self.remote_tag())
+    }
+}
+
+#[derive(Clone, Debug)]
+pub struct Local {
+    lib: Library,
+}
+
+impl Local {
+    pub fn load() -> Result<Self> {
+        let data_dir = crate::config::xivar_data_dir()?;
+        let lib = Library::open(&data_dir)?;
+        Ok(Local { lib })
+    }
+}
+
+#[async_trait]
+impl Remote for Local {
+    async fn fetch_from_remote(&self, query: Query) -> Result<Vec<PaperHit>> {
+        Ok(get_local_hits(&self.lib, &query))
     }
 }
 

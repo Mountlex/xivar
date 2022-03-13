@@ -4,7 +4,7 @@ use std::fmt::{Display, Formatter};
 use anyhow::{anyhow, Result};
 use arxiv::ArxivPaper;
 use dblp::DBLPPaper;
-use local::{Library, LocalPaper};
+use local::LocalPaper;
 
 use crate::{PaperInfo, Query};
 
@@ -90,38 +90,52 @@ impl Display for Paper {
     }
 }
 
-#[async_trait]
-pub trait Remote {
-    async fn fetch(query: Query) -> Result<Vec<PaperHit>> {
-        let response = reqwest::get(Self::get_url(query))
-            .await
-            .map_err(|err| anyhow!(err))?;
-        let body = response.text().await.map_err(|err| anyhow!(err))?;
-        // std::fs::write("response.xml", body.clone()).expect("Unable to write file");
-        Self::parse_response(&body)
-    }
-
+pub trait OnlineRemote {
     fn get_url(query: Query) -> String;
 
     fn parse_response(response: &String) -> Result<Vec<PaperHit>>;
 }
 
-pub async fn fetch_all_and_merge(query: Query) -> Result<Vec<Paper>> {
-    let data_dir = crate::config::xivar_data_dir()?;
-    let lib = Library::open(&data_dir)?;
-    let mut handles = Vec::new();
-    handles.push(tokio::spawn(arxiv::Arxiv::fetch(query.clone())));
-    handles.push(tokio::spawn(dblp::DBLP::fetch(query.clone())));
-    handles.push(tokio::spawn(async move {
-        Ok(local::get_local_hits(&lib, &query))
-    }));
+#[async_trait]
+pub trait Remote {
+    async fn fetch_from_remote(&self, query: Query) -> Result<Vec<PaperHit>>;
+}
 
-    let hits: Vec<Result<Vec<PaperHit>>> = futures::future::try_join_all(handles).await?;
-    merge_papers(hits.into_iter().flatten().flatten())
+#[async_trait]
+impl<R> Remote for R
+where
+    R: OnlineRemote + std::marker::Send + std::marker::Sync,
+{
+    async fn fetch_from_remote(&self, query: Query) -> Result<Vec<PaperHit>> {
+        let response = reqwest::get(Self::get_url(query))
+            .await
+            .map_err(|err| anyhow!(err))?;
+        let body = response.text().await.map_err(|err| anyhow!(err))?;
+        Self::parse_response(&body)
+    }
 }
 
 pub fn merge_papers<I: Iterator<Item = PaperHit>>(hits: I) -> Result<Vec<Paper>> {
     let mut papers: Vec<Paper> = hits
+        .map(|p| (p.metadata().title.normalized(), p))
+        .into_group_map()
+        .into_iter()
+        .map(|(_, v)| Paper::new(v))
+        .collect();
+
+    papers.sort_by_key(|r| r.metadata().year.to_owned());
+    papers.reverse();
+    Ok(papers)
+}
+
+pub fn merge_to_papers<I: Iterator<Item = PaperHit>>(
+    papers: Vec<Paper>,
+    hits: I,
+) -> Result<Vec<Paper>> {
+    let mut papers: Vec<Paper> = papers
+        .into_iter()
+        .flat_map(|p| p.0)
+        .chain(hits)
         .map(|p| (p.metadata().title.normalized(), p))
         .into_group_map()
         .into_iter()

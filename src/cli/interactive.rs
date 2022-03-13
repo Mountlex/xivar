@@ -1,12 +1,14 @@
 use crate::{
-    remotes::{self, Paper, Remote},
+    remotes::{self, merge_papers, merge_to_papers, Paper, PaperHit, Remote, RemoteTag},
     Query,
 };
 use anyhow::Result;
 
 use clap::Parser;
+use itertools::Itertools;
 use std::{fmt::Display, io::Write};
 use termion::{clear, color, cursor, event::Key, input::TermRead, raw::IntoRawMode};
+use tokio::sync::watch;
 
 use super::Command;
 
@@ -26,22 +28,36 @@ struct FetchResult {
     hits: Vec<Paper>,
 }
 
-async fn fetch(search_string: String) -> Result<FetchResult> {
-    if search_string.is_empty() {
-        return Ok(FetchResult {
-            used_term: search_string,
-            hits: vec![],
-        });
+async fn fetch_manager_fut<R: Remote + std::marker::Send + Clone>(
+    remote: R,
+    mut query_watch: watch::Receiver<String>,
+    result_sender: tokio::sync::mpsc::UnboundedSender<Vec<PaperHit>>,
+) {
+    let mut to_query: Option<String> = None;
+    loop {
+        tokio::select! {
+            Ok(()) = query_watch.changed() => {
+                if query_watch.borrow().is_empty() {
+                    to_query = None;
+                } else {
+                    to_query = Some(query_watch.borrow().to_string())
+                }
+            }
+            result = remote.fetch_from_remote(build_query(to_query.clone().unwrap_or_default())), if to_query.is_some() => {
+                to_query = None;
+                if let Ok(result) = result {
+                    if result_sender.send(result).is_err() {
+                        break
+                    }
+                }
+            }
+            else => break
+        }
     }
-    log::warn!("fetching {}!", search_string);
-    let query = Query::builder()
-        .terms(vec![search_string.to_string()])
-        .build();
-    let hits = remotes::fetch_all_and_merge(query).await?;
-    Ok(FetchResult {
-        used_term: search_string,
-        hits,
-    })
+}
+
+fn build_query(string: String) -> Query {
+    Query::builder().terms(vec![string]).build()
 }
 
 pub async fn interactive() -> Result<()> {
@@ -51,14 +67,39 @@ pub async fn interactive() -> Result<()> {
     print_results(&mut stdout, &data)?;
 
     let (stdin_tx, mut stdin_rx) = tokio::sync::mpsc::channel(32);
+
+    let (query_tx, query_rx) = tokio::sync::watch::channel::<String>(String::new());
+    let (result_tx, mut result_rx) = tokio::sync::mpsc::unbounded_channel::<Vec<PaperHit>>();
+
     let input_handle = tokio::task::spawn_blocking(move || {
         while let Some(key) = std::io::stdin().keys().next() {
             if let Ok(key) = key {
-                stdin_tx.blocking_send(key).unwrap();
+                if let Err(_) = stdin_tx.blocking_send(key) {
+                    // TODO
+                }
             }
         }
     });
 
+    tokio::task::spawn(fetch_manager_fut(
+        remotes::arxiv::Arxiv,
+        query_rx.clone(),
+        result_tx.clone(),
+    ));
+
+    tokio::task::spawn(fetch_manager_fut(
+        remotes::dblp::DBLP,
+        query_rx.clone(),
+        result_tx.clone(),
+    ));
+
+    tokio::task::spawn(fetch_manager_fut(
+        remotes::local::Local::load().unwrap(),
+        query_rx.clone(),
+        result_tx.clone(),
+    ));
+
+    let mut remotes_fetched: usize = 0;
     loop {
         tokio::select! {
             key = (&mut stdin_rx).recv() => {
@@ -66,10 +107,12 @@ pub async fn interactive() -> Result<()> {
                     log::warn!("key pressed {:?}", key);
 
                     if let Some(action) = handle_key(key, &mut data) {
-
                         match action {
                             Action::UpdateSearch => {
+                                remotes_fetched = 0;
+                                query_tx.send(data.search_term.clone())?;
                                 print_results(&mut stdout, &data)?;
+                                data.hits.clear()
                             },
                             Action::Reprint => {
                                 print_results(&mut stdout, &data)?;
@@ -84,10 +127,12 @@ pub async fn interactive() -> Result<()> {
 
                 }
             },
-            fetch_res = fetch(data.search_term.clone()), if data.state == State::Searching => {
-                if let Ok(fetch_res) = fetch_res {
-                    (&mut data).hits = fetch_res.hits;
-                    if fetch_res.used_term == data.search_term {
+            fetch_res = result_rx.recv() => {
+                if let Some(fetch_res) = fetch_res {
+                    remotes_fetched += 1;
+                    (&mut data).hits = merge_to_papers(data.hits.clone(), fetch_res.into_iter())?;
+                    // TODO count whether all results arrived
+                    if remotes_fetched == 3 {
                         data.state = State::Idle;
                     }
                     print_results(&mut stdout, &data)?;
@@ -133,7 +178,16 @@ fn print_results<W: std::io::Write>(writer: &mut W, data: &StateData) -> Result<
 
     match data.state {
         State::Searching => info(&String::from("Searching...")),
-        State::Scrolling => info(&String::from("Scrolling...")),
+        State::Scrolling => {
+            let selected: &Paper = &data.hits[data.selected.unwrap() as usize];
+            let string: String = selected
+                .0
+                .iter()
+                .enumerate()
+                .map(|(i, hit)| format!("({}) {}", i + 1, hit.remote_tag()))
+                .join("  ");
+            info(&string)
+        }
         State::Idle => {
             if data.hits.len() > 0 {
                 info(&format!("Found {} results!", data.hits.len()));
