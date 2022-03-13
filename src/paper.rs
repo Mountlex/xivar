@@ -23,12 +23,14 @@ pub struct PaperInfo {
 
 impl PaperInfo {
     pub fn matches(&self, query: &Query) -> bool {
-        if let Some(ref terms) = query.terms {
+        if let Some(terms) = &query.terms {
             if terms.is_empty() {
-                true
+                false
             } else {
                 let info = self.single_string();
-                terms.into_iter().all(|term| info.contains(term))
+                terms
+                    .into_iter()
+                    .all(|term| info.contains(&term.to_lowercase()))
             }
         } else {
             true

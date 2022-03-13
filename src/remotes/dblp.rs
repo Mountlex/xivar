@@ -5,7 +5,7 @@ use console::style;
 
 use crate::{ArxivIdentifier, Doi, Identifier, PaperInfo, PaperTitle, PaperUrl, Query};
 
-use super::{OnlineRemote, PaperHit, Remote, RemoteTag};
+use super::{OnlineRemote, PaperHit, RemoteTag};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct DBLPPaper {
@@ -17,6 +17,10 @@ pub struct DBLPPaper {
 impl DBLPPaper {
     pub fn metadata(&self) -> &PaperInfo {
         &self.metadata
+    }
+
+    pub fn bib_url(&self) -> PaperUrl {
+        PaperUrl::new(format!("{}.bib?param=0", self.url.raw()))
     }
 }
 

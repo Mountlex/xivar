@@ -6,8 +6,7 @@ use remotes::{
     local::{Library, LocalPaper},
     Paper, PaperHit, RemoteTag,
 };
-
-use std::io::Write;
+use tokio::io::AsyncWriteExt;
 
 use console::style;
 use console::Term;
@@ -34,6 +33,32 @@ pub fn select_hit(paper: Paper) -> Result<PaperHit> {
             _ => bail!("User did not select any remote! Aborting!"),
         }
     }
+}
+
+pub async fn async_download_and_save(
+    metadata: PaperInfo,
+    download_url: PaperUrl,
+    output: Option<&PathBuf>,
+) -> Result<LocalPaper> {
+    let dest = if let Some(output) = output {
+        if output.is_file() {
+            output.to_owned().with_extension("pdf")
+        } else {
+            output.join(metadata.default_filename())
+        }
+    } else {
+        config::xivar_document_dir()?.join(metadata.default_filename())
+    }
+    .with_extension("pdf");
+
+    download_pdf(&download_url.raw(), &dest).await?;
+
+    open::that(&dest)?;
+    Ok(LocalPaper {
+        metadata,
+        location: dest,
+        ees: vec![download_url],
+    })
 }
 
 pub fn download_and_save(
@@ -122,7 +147,7 @@ pub fn search_and_select(
 pub async fn download_pdf(url: &str, out_path: &PathBuf) -> Result<()> {
     let response = reqwest::get(&*url).await.map_err(|err| anyhow!(err))?;
     let body = response.bytes().await.map_err(|err| anyhow!(err))?;
-    let mut file = std::fs::File::create(out_path.with_extension("pdf"))?;
-    file.write_all(&body)?;
+    let mut file = tokio::fs::File::create(out_path.with_extension("pdf")).await?;
+    file.write_all(&body).await?;
     Ok(())
 }

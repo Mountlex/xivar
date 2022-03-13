@@ -5,7 +5,7 @@ use console::style;
 
 use crate::{ArxivIdentifier, Identifier, PaperInfo, PaperTitle, PaperUrl, Query};
 
-use super::{OnlineRemote, PaperHit, Remote, RemoteTag};
+use super::{OnlineRemote, PaperHit, RemoteTag};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ArxivPaper {

@@ -1,5 +1,8 @@
 use itertools::Itertools;
-use std::fmt::{Display, Formatter};
+use std::{
+    cmp::Ordering,
+    fmt::{Display, Formatter},
+};
 
 use anyhow::{anyhow, Result};
 use arxiv::ArxivPaper;
@@ -16,9 +19,9 @@ use async_trait::async_trait;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum PaperHit {
+    Local(LocalPaper),
     Arxiv(ArxivPaper),
     Dblp(DBLPPaper),
-    Local(LocalPaper),
 }
 
 impl PaperHit {
@@ -139,9 +142,19 @@ pub fn merge_to_papers<I: Iterator<Item = PaperHit>>(
         .map(|p| (p.metadata().title.normalized(), p))
         .into_group_map()
         .into_iter()
-        .map(|(_, v)| Paper::new(v))
+        .map(|(_, mut v)| {
+            v.sort_by(|a, b| match (a, b) {
+                (PaperHit::Local(_), PaperHit::Local(_)) => Ordering::Equal,
+                (PaperHit::Arxiv(_), PaperHit::Arxiv(_)) => Ordering::Equal,
+                (PaperHit::Dblp(_), PaperHit::Dblp(_)) => Ordering::Equal,
+                (PaperHit::Local(_), _) => Ordering::Less,
+                (PaperHit::Arxiv(_), PaperHit::Dblp(_)) => Ordering::Less,
+                (PaperHit::Arxiv(_), PaperHit::Local(_)) => Ordering::Greater,
+                (PaperHit::Dblp(_), _) => Ordering::Greater,
+            });
+            Paper::new(v)
+        })
         .collect();
-
     papers.sort_by_key(|r| r.metadata().year.to_owned());
     papers.reverse();
     Ok(papers)
