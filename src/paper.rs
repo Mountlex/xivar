@@ -139,9 +139,26 @@ impl Display for Paper {
 pub struct PaperInfo {
     pub id: Option<Identifier>,
     pub title: PaperTitle,
-    pub venue: String,
+    pub venue: Venue,
     pub authors: Vec<String>,
     pub year: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq)]
+pub enum Venue {
+    Journal(String),
+    Conf(String),
+    Arxiv(String),
+}
+
+impl Display for Venue {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Venue::Journal(name) => write!(f, "{}", name),
+            Venue::Conf(name) => write!(f, "{}", name),
+            Venue::Arxiv(name) => write!(f, "{}", name),
+        }
+    }
 }
 
 impl PaperInfo {

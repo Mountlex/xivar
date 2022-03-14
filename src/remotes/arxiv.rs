@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter};
 use anyhow::{anyhow, Result};
 use console::style;
 
-use crate::{ArxivIdentifier, Identifier, PaperInfo, PaperTitle, PaperUrl, Query};
+use crate::{ArxivIdentifier, Identifier, PaperInfo, PaperTitle, PaperUrl, Query, Venue};
 
 use super::{OnlineRemote, PaperHit};
 
@@ -124,7 +124,7 @@ impl OnlineRemote for Arxiv {
                 let paper = PaperInfo {
                     id: Some(id),
                     authors,
-                    venue: "CoRR".to_owned(),
+                    venue: Venue::Journal("CoRR".to_owned()),
                     title: PaperTitle::new(title),
                     year,
                 };

@@ -3,7 +3,7 @@ use std::fmt::{Display, Formatter};
 use anyhow::{anyhow, Result};
 use console::style;
 
-use crate::{ArxivIdentifier, Doi, Identifier, PaperInfo, PaperTitle, PaperUrl, Query};
+use crate::{ArxivIdentifier, Doi, Identifier, PaperInfo, PaperTitle, PaperUrl, Query, Venue};
 
 use super::{OnlineRemote, PaperHit};
 
@@ -24,14 +24,17 @@ impl DBLPPaper {
     }
 
     pub fn remote_tag(&self) -> String {
-        style(format!(
+        let mut obj = style(format!(
             "DBLP({} {})",
             self.metadata().year,
             self.metadata().venue
-        ))
-        .cyan()
-        .bold()
-        .to_string()
+        ));
+        match self.metadata.venue {
+            Venue::Conf(_) => obj = obj.cyan(),
+            Venue::Arxiv(_) => obj = obj.yellow(),
+            Venue::Journal(_) => obj = obj.color256(208), // dark orange
+        };
+        obj.bold().to_string()
     }
 }
 
@@ -81,11 +84,28 @@ impl OnlineRemote for DBLP {
                             .text()
                             .unwrap()
                             .to_owned();
-                        let venue = info
+
+                        let venue_name = info
                             .children()
                             .find(|n| n.has_tag_name("venue"))
                             .map(|v| v.text().unwrap().to_owned())
                             .unwrap_or_default();
+                        let key = info
+                            .children()
+                            .find(|n| n.has_tag_name("key"))
+                            .map(|v| v.text().unwrap().to_owned())
+                            .unwrap_or_default();
+
+                        let venue = if key.starts_with("journal") {
+                            if venue_name == "CoRR" {
+                                Venue::Arxiv(venue_name)
+                            } else {
+                                Venue::Journal(venue_name)
+                            }
+                        } else {
+                            Venue::Conf(venue_name)
+                        };
+
                         let year = info
                             .children()
                             .find(|n| n.has_tag_name("year"))

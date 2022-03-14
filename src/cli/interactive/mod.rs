@@ -119,7 +119,6 @@ pub async fn interactive() -> Result<()> {
                                 //let res_tx = result_tx.clone();
                                 tokio::task::spawn(async move {
                                     let paper = async_download_and_save(info, url, None).await?;
-                                    //res_tx.send(vec![PaperHit::Local(paper.clone())])?;
                                     log::warn!("Sending save request...");
                                     tx.send(LibReq::Save { paper }).await?;
                                     log::warn!("Sended save request");
