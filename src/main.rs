@@ -1,7 +1,7 @@
 mod cli;
 mod config;
-mod finder;
 mod identifier;
+mod library;
 mod paper;
 mod query;
 mod remotes;

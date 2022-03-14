@@ -1,13 +1,9 @@
-mod actions;
-mod add;
 mod clean;
 mod interactive;
-mod local;
 pub mod util;
 
 use anyhow::Result;
 use clean::Clean;
-use local::Local;
 
 use clap::{Parser, Subcommand};
 pub use interactive::interactive;
@@ -36,15 +32,11 @@ impl Cli {
 #[derive(Subcommand, Debug)]
 enum Helpers {
     Clean(Clean),
-    Local(Local),
-    Add(add::Add),
 }
 
 impl Helpers {
     fn run(&self) -> Result<()> {
         match &self {
-            Helpers::Add(h) => h.run(),
-            Helpers::Local(h) => h.run(),
             Helpers::Clean(h) => h.run(),
         }
     }

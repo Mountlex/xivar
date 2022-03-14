@@ -5,7 +5,7 @@ use console::style;
 
 use crate::{ArxivIdentifier, Identifier, PaperInfo, PaperTitle, PaperUrl, Query};
 
-use super::{OnlineRemote, PaperHit, RemoteTag};
+use super::{OnlineRemote, PaperHit};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ArxivPaper {
@@ -24,10 +24,8 @@ impl ArxivPaper {
             self.metadata.id.as_ref().unwrap()
         ))
     }
-}
 
-impl RemoteTag for ArxivPaper {
-    fn remote_tag(&self) -> String {
+    pub fn remote_tag(&self) -> String {
         style(format!("arXiv({})", self.metadata().year))
             .yellow()
             .bold()

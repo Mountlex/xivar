@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 
-use crate::{config, remotes::local::Library};
+use crate::{config, library::Library};
 
 #[derive(Parser, Debug)]
 #[clap(about = "Remove non-existent files from your library")]

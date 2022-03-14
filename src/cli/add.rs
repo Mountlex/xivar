@@ -10,7 +10,7 @@ use super::util;
 
 use crate::{
     config,
-    remotes::local::{Library, LocalPaper},
+    library::{Library, LocalPaper},
     Identifier, PaperInfo, PaperTitle, Query,
 };
 

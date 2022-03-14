@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use anyhow::Result;
 use clap::Parser;
 
-use crate::{config, finder, remotes::local::Library, Query};
+use crate::{config, finder, library::Library, Query};
 
 use super::util;
 

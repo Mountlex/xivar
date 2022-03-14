@@ -1,44 +1,21 @@
 use crate::{
     cli::util::async_download_and_save,
-    remotes::{
-        self,
-        local::{get_local_hits, Library, LocalPaper},
-        merge_to_papers, Paper, PaperHit, Remote, RemoteTag,
-    },
-    PaperInfo, PaperUrl, Query,
+    library::{lib_manager_fut, LibReq},
+    merge_to_papers,
+    remotes::{self, FetchResult, Remote},
+    Paper, PaperHit, PaperInfo, PaperUrl, Query,
 };
 use anyhow::Result;
 
-use async_trait::async_trait;
-use clap::Parser;
 use itertools::Itertools;
 use std::{fmt::Display, io::Write};
 use termion::{clear, color, cursor, event::Key, input::TermRead, raw::IntoRawMode};
 use tokio::sync::watch;
 
-#[derive(Clone, Debug)]
-pub struct LocalRemote {
-    query_sender: tokio::sync::mpsc::Sender<LocalReq>,
-}
-
-#[async_trait]
-impl Remote for LocalRemote {
-    async fn fetch_from_remote(&self, query: Query) -> Result<Vec<PaperHit>> {
-        let (res_sender, res_recv) = tokio::sync::oneshot::channel::<Vec<PaperHit>>();
-        self.query_sender
-            .send(LocalReq::Query {
-                res_channel: res_sender,
-                query,
-            })
-            .await?;
-        res_recv.await.map_err(|err| anyhow::anyhow!(err))
-    }
-}
-
 async fn fetch_manager_fut<R: Remote + std::marker::Send + Clone>(
     remote: R,
     mut query_watch: watch::Receiver<String>,
-    result_sender: tokio::sync::mpsc::UnboundedSender<Vec<PaperHit>>,
+    result_sender: tokio::sync::mpsc::UnboundedSender<FetchResult>,
 ) {
     let mut to_query: Option<String> = None;
     loop {
@@ -63,35 +40,6 @@ async fn fetch_manager_fut<R: Remote + std::marker::Send + Clone>(
     }
 }
 
-#[derive(Debug)]
-enum LocalReq {
-    Save {
-        paper: LocalPaper,
-    },
-    Query {
-        res_channel: tokio::sync::oneshot::Sender<Vec<PaperHit>>,
-        query: Query,
-    },
-}
-
-async fn lib_manager_fut(mut req_recv: tokio::sync::mpsc::Receiver<LocalReq>) -> Result<()> {
-    let data_dir = crate::config::xivar_data_dir()?;
-    let mut lib = Library::open(&data_dir)?;
-
-    while let Some(req) = req_recv.recv().await {
-        match req {
-            LocalReq::Save { paper } => {
-                lib.add(paper);
-            }
-            LocalReq::Query { res_channel, query } => {
-                let results = get_local_hits(&lib, &query);
-                res_channel.send(results).unwrap();
-            }
-        }
-    }
-    Ok(())
-}
-
 fn build_query(string: String) -> Query {
     Query::builder()
         .terms(
@@ -110,9 +58,8 @@ pub async fn interactive() -> Result<()> {
     print_results(&mut stdout, &data)?;
 
     let (stdin_tx, mut stdin_rx) = tokio::sync::mpsc::channel(32);
-
     let (query_tx, query_rx) = tokio::sync::watch::channel::<String>(String::new());
-    let (result_tx, mut result_rx) = tokio::sync::mpsc::unbounded_channel::<Vec<PaperHit>>();
+    let (result_tx, mut result_rx) = tokio::sync::mpsc::unbounded_channel::<FetchResult>();
 
     let input_handle = tokio::task::spawn_blocking(move || {
         while let Some(key) = std::io::stdin().keys().next() {
@@ -136,11 +83,9 @@ pub async fn interactive() -> Result<()> {
         result_tx.clone(),
     ));
 
-    let (local_tx, local_rx) = tokio::sync::mpsc::channel::<LocalReq>(32);
+    let (local_tx, local_rx) = tokio::sync::mpsc::channel::<LibReq>(32);
     tokio::task::spawn(fetch_manager_fut(
-        LocalRemote {
-            query_sender: local_tx.clone(),
-        },
+        remotes::local::LocalRemote::with_sender(local_tx.clone()),
         query_rx.clone(),
         result_tx.clone(),
     ));
@@ -176,19 +121,19 @@ pub async fn interactive() -> Result<()> {
                                     let paper = async_download_and_save(info, url, None).await?;
                                     //res_tx.send(vec![PaperHit::Local(paper.clone())])?;
                                     log::warn!("Sending save request...");
-                                    tx.send(LocalReq::Save { paper }).await?;
+                                    tx.send(LibReq::Save { paper }).await?;
                                     log::warn!("Sended save request");
                                     Ok::<(), anyhow::Error>(())
                                 });
                             },
                             Action::FetchToClip(url) => {
                                 tokio::task::spawn(async move {
-                                let response = reqwest::get(&url.raw()).await.map_err(|err| anyhow::anyhow!(err))?;
-                                let body: String = response.text().await.map_err(|err| anyhow::anyhow!(err))?;
-                                tokio::fs::write("/tmp/xivar.bib", body).await?;
-                                open::that("/tmp/xivar.bib")?;
-                                Ok::<(), anyhow::Error>(())
-                            });
+                                    let response = reqwest::get(&url.raw()).await.map_err(|err| anyhow::anyhow!(err))?;
+                                    let body: String = response.text().await.map_err(|err| anyhow::anyhow!(err))?;
+                                    tokio::fs::write("/tmp/xivar.bib", body).await?;
+                                    open::that("/tmp/xivar.bib")?;
+                                    Ok::<(), anyhow::Error>(())
+                                });
                             },
                         }
                     }
@@ -198,7 +143,7 @@ pub async fn interactive() -> Result<()> {
             fetch_res = result_rx.recv() => {
                 if let Some(fetch_res) = fetch_res {
                     remotes_fetched += 1;
-                    (&mut data).hits = merge_to_papers(data.hits.clone(), fetch_res.into_iter())?;
+                    (&mut data).hits = merge_to_papers(data.hits.clone(), fetch_res.hits.into_iter())?;
                     // TODO count whether all results arrived
                     if remotes_fetched == 3 {
                         data.state = State::Idle;

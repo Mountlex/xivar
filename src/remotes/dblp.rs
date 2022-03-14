@@ -5,7 +5,7 @@ use console::style;
 
 use crate::{ArxivIdentifier, Doi, Identifier, PaperInfo, PaperTitle, PaperUrl, Query};
 
-use super::{OnlineRemote, PaperHit, RemoteTag};
+use super::{OnlineRemote, PaperHit};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct DBLPPaper {
@@ -22,10 +22,8 @@ impl DBLPPaper {
     pub fn bib_url(&self) -> PaperUrl {
         PaperUrl::new(format!("{}.bib?param=0", self.url.raw()))
     }
-}
 
-impl RemoteTag for DBLPPaper {
-    fn remote_tag(&self) -> String {
+    pub fn remote_tag(&self) -> String {
         style(format!(
             "DBLP({} {})",
             self.metadata().year,
