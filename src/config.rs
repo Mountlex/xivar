@@ -29,22 +29,20 @@ pub fn xivar_document_dir() -> Result<PathBuf> {
         None => bail!("could not find database directory, please set XIVAR_DOCUMENT_DIR manually"),
     };
 
-    let mut settings = config::Config::default();
-    if config_file.exists() {
-        settings.merge(config::File::from(config_file))?;
-    }
-
-    settings.merge(config::Environment::with_prefix("XIVAR"))?;
-    settings.set(
-        "document_dir",
-        dirs_next::document_dir()
-            .unwrap()
-            .as_path()
-            .as_os_str()
-            .to_str()
-            .unwrap()
-            .to_owned(),
-    )?;
+    let settings = config::Config::builder()
+        .add_source(config::Environment::with_prefix("XIVAR"))
+        .add_source(config::File::from(config_file))
+        .set_default(
+            "document_dir",
+            dirs_next::document_dir()
+                .unwrap()
+                .as_path()
+                .as_os_str()
+                .to_str()
+                .unwrap()
+                .to_owned(),
+        )?
+        .build()?;
 
     let path = settings.get::<String>("document_dir")?;
     Ok(PathBuf::from(path))

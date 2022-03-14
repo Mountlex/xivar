@@ -11,7 +11,7 @@ pub use paper::*;
 pub use query::Query;
 
 use clap::Parser;
-use cli::{interactive, Cli, Command};
+use cli::Cli;
 
 // fn main() {
 //     set_up_logging();
@@ -22,8 +22,13 @@ use cli::{interactive, Cli, Command};
 
 #[tokio::main]
 async fn main() {
-    set_up_logging();
-    interactive().await;
+    if let Err(err) = set_up_logging() {
+        println!("{}", err);
+    }
+    let app = Cli::parse();
+    if let Err(err) = app.run().await {
+        println!("{}", err);
+    }
 }
 
 fn set_up_logging() -> Result<(), fern::InitError> {

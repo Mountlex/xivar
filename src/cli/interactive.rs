@@ -14,19 +14,7 @@ use clap::Parser;
 use itertools::Itertools;
 use std::{fmt::Display, io::Write};
 use termion::{clear, color, cursor, event::Key, input::TermRead, raw::IntoRawMode};
-use tokio::{io::AsyncWriteExt, sync::watch};
-
-use super::Command;
-
-#[derive(Parser, Debug)]
-#[clap(about = "Search remotes and your local library")]
-pub struct Interactive {}
-
-impl Command for Interactive {
-    fn run(&self) -> Result<()> {
-        Ok(())
-    }
-}
+use tokio::sync::watch;
 
 #[derive(Clone, Debug)]
 pub struct LocalRemote {
@@ -90,20 +78,18 @@ async fn lib_manager_fut(mut req_recv: tokio::sync::mpsc::Receiver<LocalReq>) ->
     let data_dir = crate::config::xivar_data_dir()?;
     let mut lib = Library::open(&data_dir)?;
 
-    loop {
-        while let Some(req) = req_recv.recv().await {
-            match req {
-                LocalReq::Save { paper } => {
-                    lib.add(paper);
-                    lib.save()?
-                }
-                LocalReq::Query { res_channel, query } => {
-                    let results = get_local_hits(&lib, &query);
-                    res_channel.send(results).unwrap();
-                }
+    while let Some(req) = req_recv.recv().await {
+        match req {
+            LocalReq::Save { paper } => {
+                lib.add(paper);
+            }
+            LocalReq::Query { res_channel, query } => {
+                let results = get_local_hits(&lib, &query);
+                res_channel.send(results).unwrap();
             }
         }
     }
+    Ok(())
 }
 
 fn build_query(string: String) -> Query {
@@ -158,7 +144,7 @@ pub async fn interactive() -> Result<()> {
         query_rx.clone(),
         result_tx.clone(),
     ));
-    tokio::task::spawn(lib_manager_fut(local_rx));
+    let lib_manager_handle = tokio::task::spawn(lib_manager_fut(local_rx));
 
     let mut remotes_fetched: usize = 0;
     loop {
@@ -185,9 +171,13 @@ pub async fn interactive() -> Result<()> {
                             },
                             Action::Download(info, url) => {
                                 let tx = local_tx.clone();
+                                //let res_tx = result_tx.clone();
                                 tokio::task::spawn(async move {
                                     let paper = async_download_and_save(info, url, None).await?;
+                                    //res_tx.send(vec![PaperHit::Local(paper.clone())])?;
+                                    log::warn!("Sending save request...");
                                     tx.send(LocalReq::Save { paper }).await?;
+                                    log::warn!("Sended save request");
                                     Ok::<(), anyhow::Error>(())
                                 });
                             },
@@ -195,8 +185,8 @@ pub async fn interactive() -> Result<()> {
                                 tokio::task::spawn(async move {
                                 let response = reqwest::get(&url.raw()).await.map_err(|err| anyhow::anyhow!(err))?;
                                 let body: String = response.text().await.map_err(|err| anyhow::anyhow!(err))?;
-                                tokio::fs::write("temp.bib", body).await?;
-                                open::that("temp.bib")?;
+                                tokio::fs::write("/tmp/xivar.bib", body).await?;
+                                open::that("/tmp/xivar.bib")?;
                                 Ok::<(), anyhow::Error>(())
                             });
                             },
@@ -219,6 +209,7 @@ pub async fn interactive() -> Result<()> {
         }
     }
 
+    lib_manager_handle.abort();
     input_handle.abort();
     write!(
         stdout,
@@ -274,7 +265,9 @@ fn print_results<W: std::io::Write>(writer: &mut W, data: &StateData) -> Result<
             }
         }
         State::SelectedHit { index: _, hit } => match hit {
-            PaperHit::Local(_) => info(&format!("Select action: (1) open")),
+            PaperHit::Local(paper) => {
+                info(&format!("Select action: (1) open {:?}", paper.location))
+            }
             PaperHit::Dblp(paper) => info(&format!(
                 "Select action: (1) {:15}  (2) {:15}  (3) Show bib file",
                 paper.ee.raw(),

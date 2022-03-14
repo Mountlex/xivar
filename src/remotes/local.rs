@@ -126,6 +126,8 @@ impl Library {
             return Ok(());
         }
 
+        log::warn!("Saving library...");
+
         let (buffer, buffer_size) = (|| -> bincode::Result<_> {
             let version_size = bincode::serialized_size(&Self::CURRENT_VERSION)?;
             let papers_size = bincode::serialized_size(&self.papers)?;
@@ -158,6 +160,8 @@ impl Library {
         let path = Self::get_path(&self.data_dir);
         persist(file, &path)
             .with_context(|| format!("could not replace store: {}", path.display()))?;
+
+        log::warn!("... done!");
 
         self.modified = false;
         Ok(())
@@ -215,6 +219,12 @@ impl Library {
             .iter()
             .map(|&i| self.papers.swap_remove(i))
             .collect();
+        self.modified = true;
+        removed
+    }
+
+    pub fn clear(&mut self) -> Vec<LocalPaper> {
+        let removed = self.papers.drain(..).collect();
         self.modified = true;
         removed
     }

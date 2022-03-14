@@ -6,7 +6,6 @@ use clap::Parser;
 use crate::{config, finder, remotes::local::Library, Query};
 
 use super::util;
-use super::Command;
 
 #[derive(Parser, Debug)]
 #[clap(about = "Search your local library")]
@@ -20,8 +19,8 @@ pub struct Local {
     num_hits: Option<u32>,
 }
 
-impl Command for Local {
-    fn run(&self) -> Result<()> {
+impl Local {
+    pub fn run(&self) -> Result<()> {
         let query = Query::builder()
             .terms(self.search_terms.clone())
             .max_hits(self.num_hits)

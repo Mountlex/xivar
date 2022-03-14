@@ -6,7 +6,7 @@ use console::{style, Term};
 use dialoguer::{theme::ColorfulTheme, Confirm, Input, Select};
 use lopdf::{Document, Object};
 
-use super::{util, Command};
+use super::util;
 
 use crate::{
     config,
@@ -21,8 +21,8 @@ pub struct Add {
     pdf_file: PathBuf,
 }
 
-impl Command for Add {
-    fn run(&self) -> Result<()> {
+impl Add {
+    pub fn run(&self) -> Result<()> {
         if self.pdf_file.is_file() && "pdf" == self.pdf_file.extension().unwrap() {
             let data_dir = config::xivar_data_dir()?;
             let mut lib = Library::open(&data_dir)?;
