@@ -22,6 +22,19 @@ impl Query {
     }
 }
 
+impl From<String> for Query {
+    fn from(query: String) -> Self {
+        Query::builder()
+            .terms(
+                query
+                    .split_whitespace()
+                    .map(|s| s.trim().to_lowercase())
+                    .collect(),
+            )
+            .build()
+    }
+}
+
 pub struct QueryBuilder {
     terms: Option<Vec<String>>,
     max_hits: Option<Option<u32>>,

@@ -1,65 +1,28 @@
+mod state;
+
 use crate::{
     cli::util::async_download_and_save,
     library::{lib_manager_fut, LibReq},
-    merge_to_papers,
     remotes::{self, FetchResult, Remote},
-    Paper, PaperHit, PaperInfo, PaperUrl, Query,
+    PaperInfo, PaperUrl, Query,
 };
 use anyhow::Result;
 
-use itertools::Itertools;
-use std::{fmt::Display, io::Write};
-use termion::{clear, color, cursor, event::Key, input::TermRead, raw::IntoRawMode};
+use std::io::Write;
+use termion::{clear, cursor, input::TermRead, raw::IntoRawMode};
 use tokio::sync::watch;
 
-async fn fetch_manager_fut<R: Remote + std::marker::Send + Clone>(
-    remote: R,
-    mut query_watch: watch::Receiver<String>,
-    result_sender: tokio::sync::mpsc::UnboundedSender<FetchResult>,
-) {
-    let mut to_query: Option<String> = None;
-    loop {
-        tokio::select! {
-            Ok(()) = query_watch.changed() => {
-                if query_watch.borrow().is_empty() {
-                    to_query = None;
-                } else {
-                    to_query = Some(query_watch.borrow().to_string())
-                }
-            }
-            result = remote.fetch_from_remote(build_query(to_query.clone().unwrap_or_default())), if to_query.is_some() => {
-                to_query = None;
-                if let Ok(result) = result {
-                    if result_sender.send(result).is_err() {
-                        break
-                    }
-                }
-            }
-            else => break
-        }
-    }
-}
-
-fn build_query(string: String) -> Query {
-    Query::builder()
-        .terms(
-            string
-                .split_whitespace()
-                .map(|s| s.trim().to_lowercase())
-                .collect(),
-        )
-        .build()
-}
+use self::state::StateData;
 
 pub async fn interactive() -> Result<()> {
     let mut stdout = std::io::stdout().into_raw_mode()?;
     write!(stdout, "{}{} ", cursor::Goto(1, 1), clear::All)?;
     let mut data = StateData::new();
-    print_results(&mut stdout, &data)?;
+    data.write_to_terminal(&mut stdout)?;
 
     let (stdin_tx, mut stdin_rx) = tokio::sync::mpsc::channel(32);
     let (query_tx, query_rx) = tokio::sync::watch::channel::<String>(String::new());
-    let (result_tx, mut result_rx) = tokio::sync::mpsc::unbounded_channel::<FetchResult>();
+    let (result_tx, mut result_rx) = tokio::sync::mpsc::unbounded_channel::<Result<FetchResult>>();
 
     let input_handle = tokio::task::spawn_blocking(move || {
         while let Some(key) = std::io::stdin().keys().next() {
@@ -71,20 +34,20 @@ pub async fn interactive() -> Result<()> {
         }
     });
 
-    tokio::task::spawn(fetch_manager_fut(
+    let arxiv_handle = tokio::task::spawn(fetch_manager(
         remotes::arxiv::Arxiv,
         query_rx.clone(),
         result_tx.clone(),
     ));
 
-    tokio::task::spawn(fetch_manager_fut(
+    let dblp_handle = tokio::task::spawn(fetch_manager(
         remotes::dblp::DBLP,
         query_rx.clone(),
         result_tx.clone(),
     ));
 
     let (local_tx, local_rx) = tokio::sync::mpsc::channel::<LibReq>(32);
-    tokio::task::spawn(fetch_manager_fut(
+    let local_handle = tokio::task::spawn(fetch_manager(
         remotes::local::LocalRemote::with_sender(local_tx.clone()),
         query_rx.clone(),
         result_tx.clone(),
@@ -96,32 +59,32 @@ pub async fn interactive() -> Result<()> {
         tokio::select! {
             key = (&mut stdin_rx).recv() => {
                 if let Some(key) = key {
-                    log::warn!("key pressed {:?}", key);
+                    log::info!("Pressed key {:?}", key);
 
-                    if let Some(action) = handle_key(key, &mut data) {
+                    if let Some(action) = data.state_transition(key) {
                         match action {
                             Action::UpdateSearch => {
                                 remotes_fetched = 0;
-                                query_tx.send(data.search_term.clone())?;
-                                print_results(&mut stdout, &data)?;
-                                data.hits.clear()
+                                query_tx.send(data.term().to_string())?;
+                                data.write_to_terminal(&mut stdout)?;
+                                data.clear_papers()
                             },
                             Action::Reprint => {
-                                print_results(&mut stdout, &data)?;
+                                data.write_to_terminal(&mut stdout)?;
 
                             }
                             Action::Quit => {
-                                log::warn!("Quitting!");
+                                log::info!("Quitting!");
                                 break;
                             },
                             Action::Download(info, url) => {
                                 let tx = local_tx.clone();
                                 //let res_tx = result_tx.clone();
                                 tokio::task::spawn(async move {
+                                    log::info!("Starting to download paper at {:?}", url);
                                     let paper = async_download_and_save(info, url, None).await?;
-                                    log::warn!("Sending save request...");
+                                    log::info!("Finished downloading paper!");
                                     tx.send(LibReq::Save { paper }).await?;
-                                    log::warn!("Sended save request");
                                     Ok::<(), anyhow::Error>(())
                                 });
                             },
@@ -142,18 +105,23 @@ pub async fn interactive() -> Result<()> {
             fetch_res = result_rx.recv() => {
                 if let Some(fetch_res) = fetch_res {
                     remotes_fetched += 1;
-                    (&mut data).hits = merge_to_papers(data.hits.clone(), fetch_res.hits.into_iter())?;
+                    if let Ok(ok_res) = fetch_res {
+                        data.merge_to_papers(ok_res.hits);
+                    }
                     // TODO count whether all results arrived
                     if remotes_fetched == 3 {
-                        data.state = State::Idle;
+                        data.to_idle()
                     }
-                    print_results(&mut stdout, &data)?;
+                    data.write_to_terminal(&mut stdout)?;
                 }
             }
         }
     }
 
     lib_manager_handle.abort();
+    arxiv_handle.abort();
+    dblp_handle.abort();
+    local_handle.abort();
     input_handle.abort();
     write!(
         stdout,
@@ -164,245 +132,40 @@ pub async fn interactive() -> Result<()> {
     )
     .ok();
     stdout.flush()?;
-
+    std::process::Command::new("clear").status().unwrap();
     Ok(())
 }
 
-fn print_results<W: std::io::Write>(writer: &mut W, data: &StateData) -> Result<()> {
-    write!(
-        writer,
-        "{hide}{goto}{clear}",
-        hide = cursor::Hide,
-        goto = cursor::Goto(1, 4),
-        clear = clear::AfterCursor
-    )
-    .ok();
-    let (_width, height) = termion::terminal_size().unwrap_or((80, 20));
-
-    write!(
-        writer,
-        "{hide}{goto}{clear}Search: {}",
-        data.search_term,
-        hide = cursor::Hide,
-        goto = cursor::Goto(1, 1),
-        clear = clear::CurrentLine
-    )
-    .ok();
-
-    match &data.state {
-        State::Searching => info(&String::from("Searching...")),
-        State::Scrolling(i) => {
-            let selected: &Paper = &data.hits[*i as usize];
-            let string: String = selected
-                .0
-                .iter()
-                .enumerate()
-                .map(|(i, hit)| format!("({}) {}", i + 1, hit.remote_tag()))
-                .join("  ");
-            info(&format!("Select remote: {}", string))
-        }
-        State::Idle => {
-            if data.hits.len() > 0 {
-                info(&format!("Found {} results!", data.hits.len()));
-            } else {
-                info(&String::from(""));
-            }
-        }
-        State::SelectedHit { index: _, hit } => match hit {
-            PaperHit::Local(paper) => {
-                info(&format!("Select action: (1) open {:?}", paper.location))
-            }
-            PaperHit::Dblp(paper) => info(&format!(
-                "Select action: (1) {:15}  (2) {:15}  (3) Show bib file",
-                paper.ee.raw(),
-                paper.url.raw()
-            )),
-            PaperHit::Arxiv(_) => info(&format!("Select action: (1) Download  (2) open online")),
-        },
-    }
-
-    for (i, paper) in data.hits.iter().enumerate().take((height - 5) as usize) {
-        if data.state == State::Scrolling(i as u16) {
-            write!(
-                writer,
-                "{hide}{goto}{clear}{color}{}",
-                paper,
-                hide = cursor::Hide,
-                goto = cursor::Goto(1, i as u16 + 4),
-                clear = clear::CurrentLine,
-                color = color::Bg(color::Blue),
-            )?;
-        } else {
-            write!(
-                writer,
-                "{hide}{goto}{clear}{}",
-                paper,
-                hide = cursor::Hide,
-                goto = cursor::Goto(1, i as u16 + 4),
-                clear = clear::CurrentLine,
-            )?;
-        }
-    }
-    writer.flush()?;
-    Ok(())
-}
-
-fn handle_key(key: Key, data: &mut StateData) -> Option<Action> {
-    let current_state = data.state.clone();
-    match (key, current_state) {
-        (Key::Ctrl('c'), _) => Some(Action::Quit),
-        (Key::Char(c), State::Idle) => {
-            data.search_term.push(c);
-            data.state = State::Searching;
-            Some(Action::UpdateSearch)
-        }
-        (Key::Char(c), State::Searching) => {
-            data.search_term.push(c);
-            Some(Action::UpdateSearch)
-        }
-        (Key::Backspace, State::Searching | State::Idle) => {
-            data.search_term.pop();
-            if data.search_term.is_empty() {
-                data.state = State::Idle;
-                data.hits.clear();
-            } else {
-                data.state = State::Searching;
-            }
-            Some(Action::UpdateSearch)
-        }
-        (Key::Down, State::Idle) => {
-            if data.hits.len() > 0 {
-                data.state = State::Scrolling(0);
-                Some(Action::Reprint)
-            } else {
-                None
-            }
-        }
-        (Key::Down, State::Scrolling(i)) => {
-            if i < data.hits.len() as u16 - 1 {
-                data.state = State::Scrolling(i + 1);
-            }
-            Some(Action::Reprint)
-        }
-        (Key::Up, State::Scrolling(i)) => {
-            if i > 0 {
-                data.state = State::Scrolling(i - 1);
-            } else {
-                data.state = State::Idle;
-            }
-            Some(Action::Reprint)
-        }
-        (Key::Char('s'), State::Scrolling(_)) => {
-            data.state = State::Idle;
-            Some(Action::Reprint)
-        }
-        (Key::Char('\n'), State::Scrolling(i)) => {
-            let selected: &Paper = &data.hits[i as usize];
-            let hit = selected.0.first().unwrap();
-            match hit {
-                PaperHit::Local(paper) => open::that(&paper.location).ok()?,
-                PaperHit::Dblp(ref paper) => open::that(paper.ee.raw()).ok()?,
-                PaperHit::Arxiv(ref paper) => open::that(paper.ee.raw()).ok()?,
-            }
-            None
-        }
-        (Key::Char(s), State::Scrolling(i)) => {
-            if s.is_numeric() {
-                let j = s.to_digit(10).unwrap();
-                let selected: &Paper = &data.hits[i as usize];
-                let selected_hit = &selected.0[(j - 1) as usize];
-                data.state = State::SelectedHit {
-                    index: i,
-                    hit: selected_hit.clone(),
-                };
-                Some(Action::Reprint)
-            } else {
-                None
-            }
-        }
-        (Key::Char(s), State::SelectedHit { index: _, hit }) => {
-            match &hit {
-                PaperHit::Local(paper) => open::that(&paper.location).ok()?,
-                PaperHit::Dblp(paper) => {
-                    if s == '1' {
-                        open::that(paper.ee.raw()).ok()?
-                    }
-                    if s == '2' {
-                        open::that(paper.url.raw()).ok()?
-                    }
-                    if s == '3' {
-                        return Some(Action::FetchToClip(paper.bib_url()));
-                    }
-                }
-                PaperHit::Arxiv(paper) => {
-                    if s == '1' {
-                        return Some(Action::Download(
-                            paper.metadata().clone(),
-                            paper.download_url(),
-                        ));
-                    }
-                    if s == '2' {
-                        open::that(paper.ee.raw()).ok()?
-                    }
+async fn fetch_manager<R: Remote + std::marker::Send + Clone>(
+    remote: R,
+    mut query_watch: watch::Receiver<String>,
+    result_sender: tokio::sync::mpsc::UnboundedSender<Result<FetchResult>>,
+) {
+    let mut to_query: Option<String> = None;
+    loop {
+        tokio::select! {
+            Ok(()) = query_watch.changed() => {
+                if query_watch.borrow().is_empty() {
+                    to_query = None;
+                } else {
+                    to_query = Some(query_watch.borrow().to_string())
                 }
             }
-            Some(Action::Reprint)
-        }
-        (Key::Esc, State::SelectedHit { index: i, hit: _ }) => {
-            data.state = State::Scrolling(i);
-            Some(Action::Reprint)
-        }
-        (Key::Esc, State::Scrolling(_)) => {
-            data.state = State::Searching;
-            Some(Action::Reprint)
-        }
-        _ => None,
-    }
-}
-
-#[derive(Clone)]
-struct StateData {
-    search_term: String,
-    hits: Vec<Paper>,
-    state: State,
-}
-
-impl StateData {
-    fn new() -> Self {
-        Self {
-            search_term: String::new(),
-            hits: vec![],
-            state: State::Idle,
+            result = remote.fetch_from_remote(Query::from(to_query.unwrap_or_default())), if to_query.is_some() => {
+                to_query = None;
+                    if result_sender.send(result).is_err() {
+                        break
+                    }
+            }
+            else => break
         }
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq)]
-enum State {
-    Idle,
-    Searching,
-    Scrolling(u16),
-    SelectedHit { index: u16, hit: PaperHit },
-}
-
-enum Action {
+pub enum Action {
     UpdateSearch,
     FetchToClip(PaperUrl),
     Download(PaperInfo, PaperUrl),
     Reprint,
     Quit,
-}
-
-fn info<I: Display>(item: &I) {
-    let buf = format!("{}", item);
-    write!(
-        std::io::stdout(),
-        "{hide}{goto}{clear}{}",
-        buf,
-        hide = cursor::Hide,
-        goto = cursor::Goto(1, 2),
-        clear = clear::CurrentLine
-    )
-    .ok();
-    std::io::stdout().flush().ok();
 }

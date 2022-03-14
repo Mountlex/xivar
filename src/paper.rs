@@ -36,13 +36,10 @@ pub fn merge_papers<I: Iterator<Item = PaperHit>>(hits: I) -> Result<Vec<Paper>>
     Ok(papers)
 }
 
-pub fn merge_to_papers<I: Iterator<Item = PaperHit>>(
-    papers: Vec<Paper>,
-    hits: I,
-) -> Result<Vec<Paper>> {
-    let mut papers: Vec<Paper> = papers
+pub fn merge_to_papers<I: Iterator<Item = PaperHit>>(papers: &mut Vec<Paper>, hits: I) {
+    *papers = papers
         .into_iter()
-        .flat_map(|p| p.0)
+        .flat_map(|p| p.0.clone())
         .chain(hits)
         .map(|p| (p.metadata().title.normalized(), p))
         .into_group_map()
@@ -62,7 +59,6 @@ pub fn merge_to_papers<I: Iterator<Item = PaperHit>>(
         .collect();
     papers.sort_by_key(|r| r.metadata().year.to_owned());
     papers.reverse();
-    Ok(papers)
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]

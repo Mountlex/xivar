@@ -42,7 +42,7 @@ fn set_up_logging() -> Result<(), fern::InitError> {
                 message = message
             ));
         })
-        .level(log::LevelFilter::Warn)
+        .level(log::LevelFilter::Info)
         .chain(fern::log_file(format!(
             "logs/{}.log",
             chrono::Local::now().format("%d%m%Y-%H%M")
