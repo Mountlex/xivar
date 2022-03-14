@@ -1,17 +1,12 @@
 use std::path::PathBuf;
 
-use anyhow::{anyhow, bail, Result};
+use anyhow::{anyhow, Result};
 
 use reqwest::header::USER_AGENT;
 use tokio::io::AsyncWriteExt;
 
-use console::style;
-use console::Term;
-use dialoguer::{theme::ColorfulTheme, Select};
-
-use crate::library::Library;
 use crate::library::LocalPaper;
-use crate::{config, Paper, PaperHit, PaperInfo, PaperUrl};
+use crate::{config, PaperInfo, PaperUrl};
 
 pub async fn async_download_and_save(
     metadata: PaperInfo,

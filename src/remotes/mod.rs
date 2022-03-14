@@ -1,9 +1,4 @@
-
-
-
 use anyhow::{anyhow, Result};
-
-
 
 use crate::{PaperHit, Query};
 

@@ -1,16 +1,8 @@
 use async_trait::async_trait;
 
-
-
-
-
-
+use crate::library::{LibReq, LocalPaper};
 pub use crate::Query;
-use crate::{
-    library::{LibReq, LocalPaper},
-};
-use anyhow::{Result};
-
+use anyhow::Result;
 
 use super::{FetchResult, PaperHit, Remote};
 
