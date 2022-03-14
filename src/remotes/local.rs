@@ -1,23 +1,16 @@
 use async_trait::async_trait;
-use console::style;
-use serde::{Deserialize, Serialize};
-use std::{
-    fmt::{Display, Formatter},
-    fs, io,
-};
-use std::{
-    io::Write,
-    path::{Path, PathBuf},
-};
-use tempfile::{NamedTempFile, PersistError};
+
+
+
+
+
 
 pub use crate::Query;
 use crate::{
     library::{LibReq, LocalPaper},
-    PaperInfo, PaperUrl,
 };
-use anyhow::{bail, Context, Result};
-use bincode::Options;
+use anyhow::{Result};
+
 
 use super::{FetchResult, PaperHit, Remote};
 

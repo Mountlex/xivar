@@ -1,14 +1,11 @@
-use itertools::Itertools;
-use std::{
-    cmp::Ordering,
-    fmt::{Display, Formatter},
-};
+
+
 
 use anyhow::{anyhow, Result};
-use arxiv::ArxivPaper;
-use dblp::DBLPPaper;
 
-use crate::{library::LocalPaper, Paper, PaperHit, PaperInfo, Query};
+
+
+use crate::{PaperHit, Query};
 
 pub mod arxiv;
 pub mod dblp;

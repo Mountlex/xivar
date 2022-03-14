@@ -216,6 +216,7 @@ impl Library {
             .filter(move |copy| copy.metadata.matches(query))
     }
 
+    #[allow(dead_code)]
     pub fn find_paper_by_path<'a>(&'a self, path: &PathBuf) -> Option<&'a LocalPaper> {
         self.papers.iter().find(|paper| &paper.location == path)
     }
