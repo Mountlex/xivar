@@ -6,6 +6,7 @@ use remotes::{
     local::{Library, LocalPaper},
     Paper, PaperHit, RemoteTag,
 };
+use reqwest::header::USER_AGENT;
 use tokio::io::AsyncWriteExt;
 
 use console::style;
@@ -145,7 +146,13 @@ pub fn search_and_select(
 }
 
 pub async fn download_pdf(url: &str, out_path: &PathBuf) -> Result<()> {
-    let response = reqwest::get(&*url).await.map_err(|err| anyhow!(err))?;
+    let client = reqwest::Client::new();
+    let response = client
+        .get(&*url)
+        .header(USER_AGENT, "xivar")
+        .send()
+        .await
+        .map_err(|err| anyhow!(err))?;
     let body = response.bytes().await.map_err(|err| anyhow!(err))?;
     let mut file = tokio::fs::File::create(out_path.with_extension("pdf")).await?;
     file.write_all(&body).await?;
