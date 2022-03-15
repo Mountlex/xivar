@@ -20,6 +20,9 @@ pub async fn interactive() -> Result<()> {
     let mut data = StateData::new();
     data.write_to_terminal(&mut stdout)?;
 
+    let (width, height) = termion::terminal_size().unwrap_or((80, 20));
+    log::info!("Terminal size ({}, {})", width, height);
+
     let (stdin_tx, mut stdin_rx) = tokio::sync::mpsc::channel(32);
     let (query_tx, query_rx) = tokio::sync::watch::channel::<String>(String::new());
     let (result_tx, mut result_rx) = tokio::sync::mpsc::unbounded_channel::<Result<FetchResult>>();
@@ -113,9 +116,9 @@ pub async fn interactive() -> Result<()> {
             },
             fetch_res = result_rx.recv() => {
                 if let Some(fetch_res) = fetch_res {
-                    remotes_fetched += 1;
                     if let Ok(ok_res) = fetch_res {
                         if Query::from(data.term().to_string()) == ok_res.query {
+                            remotes_fetched += 1;
                             data.merge_to_papers(ok_res.hits);
                         }
                     }

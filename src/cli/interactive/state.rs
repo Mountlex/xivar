@@ -4,7 +4,7 @@ use itertools::Itertools;
 use std::fmt::Display;
 use termion::{clear, cursor, event::Key};
 
-use crate::{merge_to_papers, Paper, PaperHit};
+use crate::{merge_to_papers, paper, Paper, PaperHit, PaperRef};
 
 use super::Action;
 
@@ -206,7 +206,10 @@ impl StateData {
                     .enumerate()
                     .map(|(i, hit)| format!("({}) {}", i + 1, hit.remote_tag()))
                     .join("  ");
-                write_line(writer, 2, &format!("Select remote: {}", string))
+                write_line(writer, 2, &format!("Select remote: {}", string));
+                // if let Some(summary) = &selected.metadata().summary {
+                //     write_line(writer, height - 2, summary);
+                // }
             }
             State::Idle => {
                 if self.papers().len() > 0 {
@@ -219,27 +222,32 @@ impl StateData {
                     write_line(writer, 2, &"");
                 }
             }
-            State::SelectedHit { index: _, hit } => match hit {
-                PaperHit::Local(paper) => write_line(
-                    writer,
-                    2,
-                    &format!("Select action: (1) open {:?}", paper.location),
-                ),
-                PaperHit::Dblp(paper) => write_line(
-                    writer,
-                    2,
-                    &format!(
-                        "Select action: (1) {:15}  (2) {:15}  (3) Show bib file",
-                        paper.ee.raw(),
-                        paper.url.raw()
+            State::SelectedHit { index: _, hit } => {
+                // if let Some(summary) = &hit.metadata().summary {
+                //     write_line(writer, height - 2, summary);
+                // }
+                match hit {
+                    PaperHit::Local(paper) => write_line(
+                        writer,
+                        2,
+                        &format!("Select action: (1) open {:?}", paper.location),
                     ),
-                ),
-                PaperHit::Arxiv(_) => write_line(
-                    writer,
-                    2,
-                    &format!("Select action: (1) Download  (2) open online"),
-                ),
-            },
+                    PaperHit::Dblp(paper) => write_line(
+                        writer,
+                        2,
+                        &format!(
+                            "Select action: (1) {:15}  (2) {:15}  (3) Show bib file",
+                            paper.ee.raw(),
+                            paper.url.raw()
+                        ),
+                    ),
+                    PaperHit::Arxiv(_) => write_line(
+                        writer,
+                        2,
+                        &format!("Select action: (1) Download  (2) open online"),
+                    ),
+                }
+            }
         }
 
         // Papers
@@ -267,6 +275,7 @@ impl StateData {
                 )?,
             }
         }
+
         writer.flush()?;
         Ok(())
     }

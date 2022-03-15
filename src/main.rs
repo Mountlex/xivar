@@ -39,6 +39,11 @@ fn load_config() -> Result<Config> {
         None => bail!("Could not find or create config file!"),
     };
 
+    if !config_file.exists() {
+        std::fs::create_dir_all(config_file.parent().unwrap()).unwrap();
+        std::fs::File::create(&config_file)?;
+    }
+
     let data_dir = match dirs_next::data_local_dir() {
         Some(mut data_dir) => {
             data_dir.push("xivar");
@@ -75,6 +80,7 @@ async fn main() {
     if let Err(err) = set_up_logging() {
         println!("{}", err);
     }
+
     let app = Cli::parse();
     if let Err(err) = app.run().await {
         println!("{}", err);

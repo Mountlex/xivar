@@ -30,9 +30,13 @@ pub async fn lib_manager_fut(
     mut req_recv: tokio::sync::mpsc::Receiver<LibReq>,
     mut shutdown_rx: tokio::sync::broadcast::Receiver<()>,
 ) -> Result<()> {
+    log::info!("Load library...");
     let data_dir = crate::xivar_data_dir();
     let mut lib = Library::open(&data_dir)?;
 
+    log::info!("Library loaded! {} local entries.", lib.size());
+
+    // TODO error handling if library could not be loaded!
     loop {
         tokio::select! {
             req = req_recv.recv() => {
@@ -224,6 +228,10 @@ impl Library {
         self.papers
             .iter()
             .filter(move |copy| copy.metadata.matches(query))
+    }
+
+    pub fn size(&self) -> usize {
+        self.papers.len()
     }
 
     #[allow(dead_code)]

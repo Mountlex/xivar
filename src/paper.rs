@@ -138,6 +138,7 @@ pub struct PaperInfo {
     pub venue: Venue,
     pub authors: Vec<String>,
     pub year: String,
+    pub summary: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq)]

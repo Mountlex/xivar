@@ -153,6 +153,7 @@ impl OnlineRemote for DBLP {
                             venue,
                             title: PaperTitle::new(title),
                             year,
+                            summary: None,
                         };
                         PaperHit::Dblp(DBLPPaper {
                             metadata: paper,

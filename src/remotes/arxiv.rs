@@ -76,7 +76,7 @@ impl OnlineRemote for Arxiv {
                     .text()
                     .unwrap()
                     .to_owned();
-                let _summary = entry
+                let summary = entry
                     .children()
                     .find(|n| n.has_tag_name("summary"))
                     .unwrap()
@@ -127,6 +127,7 @@ impl OnlineRemote for Arxiv {
                     venue: Venue::Journal("CoRR".to_owned()),
                     title: PaperTitle::new(title),
                     year,
+                    summary: Some(summary),
                 };
                 PaperHit::Arxiv(ArxivPaper {
                     metadata: paper,
