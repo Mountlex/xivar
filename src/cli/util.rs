@@ -6,7 +6,7 @@ use reqwest::header::USER_AGENT;
 use tokio::io::AsyncWriteExt;
 
 use crate::library::LocalPaper;
-use crate::{config, PaperInfo, PaperUrl};
+use crate::{PaperInfo, PaperUrl};
 
 pub async fn async_download_and_save(
     metadata: PaperInfo,
@@ -20,7 +20,7 @@ pub async fn async_download_and_save(
             output.join(metadata.default_filename())
         }
     } else {
-        config::xivar_document_dir()?.join(metadata.default_filename())
+        crate::xivar_document_dir().join(metadata.default_filename())
     }
     .with_extension("pdf");
 

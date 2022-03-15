@@ -30,7 +30,7 @@ pub async fn lib_manager_fut(
     mut req_recv: tokio::sync::mpsc::Receiver<LibReq>,
     mut shutdown_rx: tokio::sync::broadcast::Receiver<()>,
 ) -> Result<()> {
-    let data_dir = crate::config::xivar_data_dir()?;
+    let data_dir = crate::xivar_data_dir();
     let mut lib = Library::open(&data_dir)?;
 
     loop {

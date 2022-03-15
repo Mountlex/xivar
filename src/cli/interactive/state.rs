@@ -2,7 +2,7 @@ use anyhow::Result;
 use console::style;
 use itertools::Itertools;
 use std::fmt::Display;
-use termion::{clear, color, cursor, event::Key};
+use termion::{clear, cursor, event::Key};
 
 use crate::{merge_to_papers, Paper, PaperHit};
 
@@ -250,12 +250,11 @@ impl StateData {
                 {
                     write!(
                         writer,
-                        "{hide}{goto}{clear}{color}{}",
-                        paper,
+                        "{hide}{goto}{clear}{}",
+                        style(paper).black().on_white(),
                         hide = cursor::Hide,
                         goto = cursor::Goto(1, i as u16 + 4),
                         clear = clear::CurrentLine,
-                        color = color::Bg(color::Blue),
                     )?;
                 }
                 _ => write!(
