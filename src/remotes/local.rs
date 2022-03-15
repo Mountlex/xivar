@@ -24,11 +24,12 @@ impl Remote for LocalRemote {
         self.query_sender
             .send(LibReq::Query {
                 res_channel: res_sender,
-                query,
+                query: query.clone(),
             })
             .await?;
         let results = res_recv.await.map_err(|err| anyhow::anyhow!(err))?;
         Ok(FetchResult {
+            query,
             hits: results
                 .into_iter()
                 .map(|p| PaperHit::Local(p))

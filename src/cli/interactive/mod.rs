@@ -9,7 +9,7 @@ use crate::{
 use anyhow::Result;
 
 use std::io::Write;
-use termion::{clear, cursor, input::TermRead, raw::IntoRawMode};
+use termion::{clear, cursor, event::Key, input::TermRead, raw::IntoRawMode};
 use tokio::sync::watch;
 
 use self::state::StateData;
@@ -24,35 +24,43 @@ pub async fn interactive() -> Result<()> {
     let (query_tx, query_rx) = tokio::sync::watch::channel::<String>(String::new());
     let (result_tx, mut result_rx) = tokio::sync::mpsc::unbounded_channel::<Result<FetchResult>>();
 
-    let input_handle = tokio::task::spawn_blocking(move || {
+    let (shutdown_tx, _) = tokio::sync::broadcast::channel::<()>(1);
+
+    tokio::task::spawn_blocking(move || {
         while let Some(key) = std::io::stdin().keys().next() {
             if let Ok(key) = key {
                 if let Err(_) = stdin_tx.blocking_send(key) {
                     // TODO
                 }
+                if Key::Ctrl('c') == key {
+                    break;
+                }
             }
         }
     });
 
-    let arxiv_handle = tokio::task::spawn(fetch_manager(
+    tokio::task::spawn(fetch_manager(
         remotes::arxiv::Arxiv,
         query_rx.clone(),
         result_tx.clone(),
+        shutdown_tx.subscribe(),
     ));
 
-    let dblp_handle = tokio::task::spawn(fetch_manager(
+    tokio::task::spawn(fetch_manager(
         remotes::dblp::DBLP,
         query_rx.clone(),
         result_tx.clone(),
+        shutdown_tx.subscribe(),
     ));
 
     let (local_tx, local_rx) = tokio::sync::mpsc::channel::<LibReq>(32);
-    let local_handle = tokio::task::spawn(fetch_manager(
+    tokio::task::spawn(fetch_manager(
         remotes::local::LocalRemote::with_sender(local_tx.clone()),
         query_rx.clone(),
         result_tx.clone(),
+        shutdown_tx.subscribe(),
     ));
-    let lib_manager_handle = tokio::task::spawn(lib_manager_fut(local_rx));
+    tokio::task::spawn(lib_manager_fut(local_rx, shutdown_tx.subscribe()));
 
     let mut remotes_fetched: usize = 0;
     loop {
@@ -75,6 +83,7 @@ pub async fn interactive() -> Result<()> {
                             }
                             Action::Quit => {
                                 log::info!("Quitting!");
+                                shutdown_tx.send(())?;
                                 break;
                             },
                             Action::Download(info, url) => {
@@ -106,7 +115,9 @@ pub async fn interactive() -> Result<()> {
                 if let Some(fetch_res) = fetch_res {
                     remotes_fetched += 1;
                     if let Ok(ok_res) = fetch_res {
-                        data.merge_to_papers(ok_res.hits);
+                        if Query::from(data.term().to_string()) == ok_res.query {
+                            data.merge_to_papers(ok_res.hits);
+                        }
                     }
                     // TODO count whether all results arrived
                     if remotes_fetched == 3 {
@@ -118,11 +129,12 @@ pub async fn interactive() -> Result<()> {
         }
     }
 
-    lib_manager_handle.abort();
-    arxiv_handle.abort();
-    dblp_handle.abort();
-    local_handle.abort();
-    input_handle.abort();
+    // shutdown
+    drop(result_tx);
+    let _ = result_rx.recv().await;
+    let _ = stdin_rx.recv().await;
+
+    // reset terminal
     write!(
         stdout,
         "{}{}{}",
@@ -132,7 +144,6 @@ pub async fn interactive() -> Result<()> {
     )
     .ok();
     stdout.flush()?;
-    std::process::Command::new("clear").status().unwrap();
     Ok(())
 }
 
@@ -140,6 +151,7 @@ async fn fetch_manager<R: Remote + std::marker::Send + Clone>(
     remote: R,
     mut query_watch: watch::Receiver<String>,
     result_sender: tokio::sync::mpsc::UnboundedSender<Result<FetchResult>>,
+    mut shutdown_rx: tokio::sync::broadcast::Receiver<()>,
 ) {
     let mut to_query: Option<String> = None;
     loop {
@@ -157,7 +169,8 @@ async fn fetch_manager<R: Remote + std::marker::Send + Clone>(
                         break
                     }
             }
-            else => break
+            _ = shutdown_rx.recv() => break,
+            else => break,
         }
     }
 }

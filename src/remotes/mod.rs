@@ -15,6 +15,7 @@ pub trait OnlineRemote {
 }
 
 pub struct FetchResult {
+    pub query: Query,
     pub hits: Vec<PaperHit>,
 }
 
@@ -29,11 +30,12 @@ where
     R: OnlineRemote + std::marker::Send + std::marker::Sync,
 {
     async fn fetch_from_remote(&self, query: Query) -> Result<FetchResult> {
-        let response = reqwest::get(Self::get_url(query))
+        let response = reqwest::get(Self::get_url(query.clone()))
             .await
             .map_err(|err| anyhow!(err))?;
         let body = response.text().await.map_err(|err| anyhow!(err))?;
         Ok(FetchResult {
+            query,
             hits: Self::parse_response(&body)?,
         })
     }

@@ -26,19 +26,29 @@ pub enum LibReq {
     },
 }
 
-pub async fn lib_manager_fut(mut req_recv: tokio::sync::mpsc::Receiver<LibReq>) -> Result<()> {
+pub async fn lib_manager_fut(
+    mut req_recv: tokio::sync::mpsc::Receiver<LibReq>,
+    mut shutdown_rx: tokio::sync::broadcast::Receiver<()>,
+) -> Result<()> {
     let data_dir = crate::config::xivar_data_dir()?;
     let mut lib = Library::open(&data_dir)?;
 
-    while let Some(req) = req_recv.recv().await {
-        match req {
-            LibReq::Save { paper } => {
-                lib.add(paper);
+    loop {
+        tokio::select! {
+            req = req_recv.recv() => {
+                if let Some(req) = req {
+                    match req {
+                        LibReq::Save { paper } => {
+                            lib.add(paper);
+                        }
+                        LibReq::Query { res_channel, query } => {
+                            let results = lib.iter_matches(&query).cloned().collect();
+                            res_channel.send(results).unwrap();
+                        }
+                    }
+                }
             }
-            LibReq::Query { res_channel, query } => {
-                let results = lib.iter_matches(&query).cloned().collect();
-                res_channel.send(results).unwrap();
-            }
+            _ = shutdown_rx.recv() => break
         }
     }
     Ok(())

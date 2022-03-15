@@ -1,4 +1,4 @@
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Query {
     pub terms: Option<Vec<String>>,
     pub max_hits: Option<u32>,

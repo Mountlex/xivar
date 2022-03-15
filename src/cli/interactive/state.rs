@@ -1,6 +1,7 @@
 use anyhow::Result;
+use console::style;
 use itertools::Itertools;
-use std::{fmt::Display, io::Write};
+use std::fmt::Display;
 use termion::{clear, color, cursor, event::Key};
 
 use crate::{merge_to_papers, Paper, PaperHit};
@@ -47,14 +48,14 @@ impl StateData {
         let current_state = self.state.clone();
         match (key, current_state) {
             (Key::Ctrl('c'), _) => Some(Action::Quit),
-            (Key::Char(c), State::Idle) => {
-                self.term.push(c);
-                self.state = State::Searching;
-                Some(Action::UpdateSearch)
-            }
-            (Key::Char(c), State::Searching) => {
-                self.term.push(c);
-                Some(Action::UpdateSearch)
+            (Key::Char(c), State::Searching | State::Idle) => {
+                if c != '\n' {
+                    self.term.push(c);
+                    self.state = State::Searching;
+                    Some(Action::UpdateSearch)
+                } else {
+                    None
+                }
             }
             (Key::Backspace, State::Searching | State::Idle) => {
                 self.term.pop();
@@ -88,7 +89,7 @@ impl StateData {
                 }
                 Some(Action::Reprint)
             }
-            (Key::Char('s'), State::Scrolling(_)) => {
+            (Key::Char('s'), State::Scrolling(_) | State::SelectedHit { index: _, hit: _ }) => {
                 self.state = State::Idle;
                 Some(Action::Reprint)
             }
@@ -161,24 +162,42 @@ impl StateData {
             writer,
             "{hide}{goto}{clear}",
             hide = cursor::Hide,
-            goto = cursor::Goto(1, 4),
+            goto = cursor::Goto(1, 1),
             clear = clear::AfterCursor
         )
         .ok();
         let (_width, height) = termion::terminal_size().unwrap_or((80, 20));
 
-        write!(
-            writer,
-            "{hide}{goto}{clear}Search: {}",
-            self.term,
-            hide = cursor::Hide,
-            goto = cursor::Goto(1, 1),
-            clear = clear::CurrentLine
-        )
-        .ok();
+        // First Line
+        if self.state == State::Searching || self.state == State::Idle {
+            if self.term.is_empty() {
+                write_line(
+                    writer,
+                    1,
+                    &format!("{} <start typing>", style("Search:").bold()),
+                )
+            } else {
+                write_line(
+                    writer,
+                    1,
+                    &format!(
+                        "{} {}",
+                        style("Search:").bold(),
+                        style(&self.term).black().on_white()
+                    ),
+                )
+            }
+        } else {
+            write_line(
+                writer,
+                1,
+                &format!("{} {}", style("Search:").bold(), self.term,),
+            )
+        }
 
+        // Second Line
         match &self.state {
-            State::Searching => info(&String::from("Searching...")),
+            State::Searching => write_line(writer, 2, &"Searching..."),
             State::Scrolling(i) => {
                 let selected: &Paper = &self.papers[*i as usize];
                 let string: String = selected
@@ -187,50 +206,66 @@ impl StateData {
                     .enumerate()
                     .map(|(i, hit)| format!("({}) {}", i + 1, hit.remote_tag()))
                     .join("  ");
-                info(&format!("Select remote: {}", string))
+                write_line(writer, 2, &format!("Select remote: {}", string))
             }
             State::Idle => {
                 if self.papers().len() > 0 {
-                    info(&format!("Found {} results!", self.papers().len()));
+                    write_line(
+                        writer,
+                        2,
+                        &format!("Found {} results!", self.papers().len()),
+                    );
                 } else {
-                    info(&String::from(""));
+                    write_line(writer, 2, &"");
                 }
             }
             State::SelectedHit { index: _, hit } => match hit {
-                PaperHit::Local(paper) => {
-                    info(&format!("Select action: (1) open {:?}", paper.location))
-                }
-                PaperHit::Dblp(paper) => info(&format!(
-                    "Select action: (1) {:15}  (2) {:15}  (3) Show bib file",
-                    paper.ee.raw(),
-                    paper.url.raw()
-                )),
-                PaperHit::Arxiv(_) => {
-                    info(&format!("Select action: (1) Download  (2) open online"))
-                }
+                PaperHit::Local(paper) => write_line(
+                    writer,
+                    2,
+                    &format!("Select action: (1) open {:?}", paper.location),
+                ),
+                PaperHit::Dblp(paper) => write_line(
+                    writer,
+                    2,
+                    &format!(
+                        "Select action: (1) {:15}  (2) {:15}  (3) Show bib file",
+                        paper.ee.raw(),
+                        paper.url.raw()
+                    ),
+                ),
+                PaperHit::Arxiv(_) => write_line(
+                    writer,
+                    2,
+                    &format!("Select action: (1) Download  (2) open online"),
+                ),
             },
         }
 
+        // Papers
         for (i, paper) in self.papers().iter().enumerate().take((height - 5) as usize) {
-            if self.state == State::Scrolling(i as u16) {
-                write!(
-                    writer,
-                    "{hide}{goto}{clear}{color}{}",
-                    paper,
-                    hide = cursor::Hide,
-                    goto = cursor::Goto(1, i as u16 + 4),
-                    clear = clear::CurrentLine,
-                    color = color::Bg(color::Blue),
-                )?;
-            } else {
-                write!(
+            match self.state {
+                State::Scrolling(j) | State::SelectedHit { index: j, hit: _ }
+                    if j as usize == i =>
+                {
+                    write!(
+                        writer,
+                        "{hide}{goto}{clear}{color}{}",
+                        paper,
+                        hide = cursor::Hide,
+                        goto = cursor::Goto(1, i as u16 + 4),
+                        clear = clear::CurrentLine,
+                        color = color::Bg(color::Blue),
+                    )?;
+                }
+                _ => write!(
                     writer,
                     "{hide}{goto}{clear}{}",
                     paper,
                     hide = cursor::Hide,
                     goto = cursor::Goto(1, i as u16 + 4),
                     clear = clear::CurrentLine,
-                )?;
+                )?,
             }
         }
         writer.flush()?;
@@ -246,16 +281,15 @@ pub enum State {
     SelectedHit { index: u16, hit: PaperHit },
 }
 
-fn info<I: Display>(item: &I) {
+fn write_line<I: Display, W: std::io::Write>(writer: &mut W, line: u16, item: &I) {
     let buf = format!("{}", item);
     write!(
-        std::io::stdout(),
+        writer,
         "{hide}{goto}{clear}{}",
         buf,
         hide = cursor::Hide,
-        goto = cursor::Goto(1, 2),
+        goto = cursor::Goto(1, line),
         clear = clear::CurrentLine
     )
     .ok();
-    std::io::stdout().flush().ok();
 }
