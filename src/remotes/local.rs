@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use console::style;
 
 use crate::library::{LibReq, LocalPaper};
 pub use crate::Query;
@@ -35,5 +36,9 @@ impl Remote for LocalRemote {
                 .map(|p| PaperHit::Local(p))
                 .collect::<Vec<PaperHit>>(),
         })
+    }
+
+    fn name(&self) -> String {
+        style("Local").red().bold().to_string()
     }
 }

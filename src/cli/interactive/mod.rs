@@ -7,6 +7,8 @@ use crate::{
     PaperInfo, PaperUrl, Query,
 };
 use anyhow::Result;
+use console::style;
+use itertools::Itertools;
 
 use std::{io::Write, time::Duration};
 use termion::{clear, cursor, event::Key, input::TermRead, raw::IntoRawMode};
@@ -24,6 +26,7 @@ pub async fn interactive() -> Result<()> {
     log::info!("Terminal size ({}, {})", width, height);
 
     let (stdin_tx, mut stdin_rx) = tokio::sync::mpsc::channel(32);
+    let (progress_tx, progress_rx) = tokio::sync::mpsc::channel::<ProgressRequest>(32);
     let (query_tx, query_rx) = tokio::sync::watch::channel::<String>(String::new());
     let (result_tx, mut result_rx) = tokio::sync::mpsc::unbounded_channel::<Result<FetchResult>>();
 
@@ -42,44 +45,13 @@ pub async fn interactive() -> Result<()> {
         }
     });
 
-    tokio::task::spawn(async move {
-        let mut stdout = std::io::stdout().into_raw_mode().unwrap();
-        let mut state = 0;
-        loop {
-            if state == 0 {
-                state = 1;
-                log::info!("write1");
-                write!(
-                    stdout,
-                    "{}{}{}",
-                    cursor::Goto(1, 3),
-                    clear::CurrentLine,
-                    ": "
-                )
-                .ok();
-            } else {
-                state = 0;
-                log::info!("write2");
-
-                write!(
-                    stdout,
-                    "{}{}{}{}",
-                    cursor::Goto(1, 3),
-                    cursor::Hide,
-                    clear::CurrentLine,
-                    " :"
-                )
-                .ok();
-            }
-            stdout.flush().unwrap();
-            tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
-        }
-    });
+    tokio::task::spawn(progress_manager(progress_rx, shutdown_tx.subscribe(), 50));
 
     tokio::task::spawn(fetch_manager(
         remotes::arxiv::Arxiv,
         query_rx.clone(),
         result_tx.clone(),
+        progress_tx.clone(),
         shutdown_tx.subscribe(),
     ));
 
@@ -87,6 +59,7 @@ pub async fn interactive() -> Result<()> {
         remotes::dblp::DBLP,
         query_rx.clone(),
         result_tx.clone(),
+        progress_tx.clone(),
         shutdown_tx.subscribe(),
     ));
 
@@ -95,6 +68,7 @@ pub async fn interactive() -> Result<()> {
         remotes::local::LocalRemote::with_sender(local_tx.clone()),
         query_rx.clone(),
         result_tx.clone(),
+        progress_tx.clone(),
         shutdown_tx.subscribe(),
     ));
     let (loading_tx, mut loading_rx) = tokio::sync::mpsc::channel::<LoadingResult>(1);
@@ -103,8 +77,6 @@ pub async fn interactive() -> Result<()> {
         shutdown_tx.subscribe(),
         loading_tx,
     ));
-
-    let mut state = 0;
 
     let mut remotes_fetched: usize = 0;
     let mut total_remotes: usize = 2;
@@ -132,22 +104,14 @@ pub async fn interactive() -> Result<()> {
                                 break;
                             },
                             Action::Download(info, url) => {
-                                let tx = local_tx.clone();
-                                //let res_tx = result_tx.clone();
-                                tokio::task::spawn(async move {
-                                    log::info!("Starting to download paper at {:?}", url);
-                                    let paper = async_download_and_save(info, url, None).await?;
-                                    log::info!("Finished downloading paper!");
-                                    tx.send(LibReq::Save { paper }).await?;
-                                    Ok::<(), anyhow::Error>(())
-                                });
+                                tokio::task::spawn(download_paper(info, url, local_tx.clone(), progress_tx.clone()));
                             },
                             Action::FetchToClip(url) => {
                                 tokio::task::spawn(async move {
                                     let response = reqwest::get(&url.raw()).await.map_err(|err| anyhow::anyhow!(err))?;
                                     let body: String = response.text().await.map_err(|err| anyhow::anyhow!(err))?;
                                     tokio::fs::write("/tmp/xivar.bib", body).await?;
-                                    open::that("/tmp/xivar.bib")?;
+                                    open::that_in_background("/tmp/xivar.bib");
                                     Ok::<(), anyhow::Error>(())
                                 });
                             },
@@ -196,10 +160,121 @@ pub async fn interactive() -> Result<()> {
     Ok(())
 }
 
+#[derive(Debug)]
+enum ProgressRequest {
+    Start(String, u16),
+    Finish(String),
+}
+
+async fn download_paper(
+    info: PaperInfo,
+    url: PaperUrl,
+    local_tx: tokio::sync::mpsc::Sender<LibReq>,
+    progress_tx: tokio::sync::mpsc::Sender<ProgressRequest>,
+) -> Result<()> {
+    let msg = style("Download").green().to_string();
+    progress_tx
+        .send(ProgressRequest::Start(msg.clone(), 3))
+        .await
+        .unwrap();
+    log::info!("Starting to download paper at {:?}", url);
+    let paper = async_download_and_save(info, url, None).await?;
+    let dest = paper.location.clone();
+    log::info!("Finished downloading paper!");
+    local_tx.send(LibReq::Save { paper }).await.unwrap();
+    progress_tx
+        .send(ProgressRequest::Finish(msg))
+        .await
+        .unwrap();
+    open::that_in_background(&dest);
+    Ok::<(), anyhow::Error>(())
+}
+
+async fn progress_manager(
+    mut progress_recv: tokio::sync::mpsc::Receiver<ProgressRequest>,
+    mut shutdown_rx: tokio::sync::broadcast::Receiver<()>,
+    ms: u64,
+) {
+    let mut running: Vec<(String, u16)> = vec![];
+    let tick_strings: Vec<String> = "⠁⠁⠉⠙⠚⠒⠂⠂⠒⠲⠴⠤⠄⠄⠤⠠⠠⠤⠦⠖⠒⠐⠐⠒⠓⠋⠉⠈⠈ "
+        .chars()
+        .map(|c| c.to_string().into())
+        .collect();
+    let mut state = 0;
+    loop {
+        tokio::time::sleep(Duration::from_millis(ms)).await;
+
+        if running.is_empty() {
+            tokio::select! {
+                _ = shutdown_rx.recv() => break,
+                Some(req) = progress_recv.recv() => {
+                    match req {
+                        ProgressRequest::Start(name, line) => {
+                            if !running.contains(&(name.clone(), line)) {
+                                running.push((name, line));
+                            }
+                        }
+                        ProgressRequest::Finish(name) => running.retain(|(n,_)| *n != name),
+                    }
+                }
+            }
+        } else {
+            if shutdown_rx.try_recv().is_ok() {
+                break;
+            }
+        }
+
+        while let Ok(req) = progress_recv.try_recv() {
+            match req {
+                ProgressRequest::Start(name, line) => {
+                    if !running.contains(&(name.clone(), line)) {
+                        running.push((name, line));
+                    }
+                }
+                ProgressRequest::Finish(name) => running.retain(|(n, _)| *n != name),
+            }
+        }
+
+        if !running.is_empty() {
+            for (l, names) in &running.iter().group_by(|(_, l)| l) {
+                let text = names
+                    .into_iter()
+                    .map(|(n, _)| format!("{} {}", style(&tick_strings[state]).bold(), n))
+                    .join("  ");
+                write!(
+                    std::io::stdout(),
+                    "{}{}{}{}",
+                    cursor::Goto(2, *l),
+                    cursor::Hide,
+                    clear::CurrentLine,
+                    text
+                )
+                .ok();
+            }
+        } else {
+            write!(
+                std::io::stdout(),
+                "{}{}{}",
+                cursor::Goto(2, 3),
+                cursor::Hide,
+                clear::CurrentLine,
+            )
+            .ok();
+        }
+        std::io::stdout().flush().ok();
+
+        state += 1;
+        if state == tick_strings.len() {
+            state = 0;
+        }
+    }
+}
+
 async fn fetch_manager<R: Remote + std::marker::Send + Clone>(
     remote: R,
     mut query_watch: watch::Receiver<String>,
     result_sender: tokio::sync::mpsc::UnboundedSender<Result<FetchResult>>,
+    progress_sender: tokio::sync::mpsc::Sender<ProgressRequest>,
     mut shutdown_rx: tokio::sync::broadcast::Receiver<()>,
 ) {
     let mut to_query: Option<String> = None;
@@ -207,16 +282,19 @@ async fn fetch_manager<R: Remote + std::marker::Send + Clone>(
         tokio::select! {
             Ok(()) = query_watch.changed() => {
                 if query_watch.borrow().is_empty() {
+                    progress_sender.send(ProgressRequest::Finish(remote.name())).await.unwrap();
                     to_query = None;
                 } else {
-                    to_query = Some(query_watch.borrow().to_string())
+                    to_query = Some(query_watch.borrow().to_string());
+                    progress_sender.send(ProgressRequest::Start(remote.name(), 2)).await.unwrap();
                 }
             }
             result = remote.fetch_from_remote(Query::from(to_query.unwrap_or_default())), if to_query.is_some() => {
                 to_query = None;
-                    if result_sender.send(result).is_err() {
-                        break
-                    }
+                progress_sender.send(ProgressRequest::Finish(remote.name())).await.unwrap();
+                if result_sender.send(result).is_err() {
+                    break
+                }
             }
             _ = shutdown_rx.recv() => break,
             else => break,

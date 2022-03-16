@@ -186,7 +186,7 @@ impl PaperInfo {
     }
 
     pub fn default_filename(&self) -> String {
-        let name = self
+        let first_author = self
             .authors
             .first()
             .unwrap()
@@ -194,6 +194,12 @@ impl PaperInfo {
             .last()
             .unwrap()
             .to_lowercase();
+        let other_names = self
+            .authors
+            .iter()
+            .skip(1)
+            .flat_map(|a| a.chars().next().map(|c| c.to_ascii_uppercase()))
+            .join("");
         let title = self
             .title
             .words
@@ -204,7 +210,14 @@ impl PaperInfo {
             .collect::<Vec<String>>()
             .join("")
             .to_lowercase();
-        format!("{}{}{}", name, self.year[2..].to_owned(), title).replace("/", "-")
+        format!(
+            "{}{}{}{}",
+            first_author,
+            other_names,
+            self.year[2..].to_owned(),
+            title
+        )
+        .replace("/", "-")
     }
 }
 

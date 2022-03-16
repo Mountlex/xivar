@@ -138,4 +138,8 @@ impl OnlineRemote for Arxiv {
 
         Ok(papers)
     }
+
+    fn name(&self) -> String {
+        style("arXiv").yellow().bold().to_string()
+    }
 }

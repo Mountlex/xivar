@@ -26,7 +26,6 @@ pub async fn async_download_and_save(
 
     download_pdf(&download_url.raw(), &dest).await?;
 
-    open::that(&dest)?;
     Ok(LocalPaper {
         metadata,
         location: dest,

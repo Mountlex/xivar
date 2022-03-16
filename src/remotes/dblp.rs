@@ -166,4 +166,8 @@ impl OnlineRemote for DBLP {
 
         Ok(papers)
     }
+
+    fn name(&self) -> String {
+        style("DBLP").cyan().bold().to_string()
+    }
 }

@@ -12,6 +12,8 @@ pub trait OnlineRemote {
     fn get_url(query: Query) -> String;
 
     fn parse_response(response: &String) -> Result<Vec<PaperHit>>;
+
+    fn name(&self) -> String;
 }
 
 pub struct FetchResult {
@@ -22,6 +24,8 @@ pub struct FetchResult {
 #[async_trait]
 pub trait Remote {
     async fn fetch_from_remote(&self, query: Query) -> Result<FetchResult>;
+
+    fn name(&self) -> String;
 }
 
 #[async_trait]
@@ -38,5 +42,9 @@ where
             query,
             hits: Self::parse_response(&body)?,
         })
+    }
+
+    fn name(&self) -> String {
+        self.name()
     }
 }

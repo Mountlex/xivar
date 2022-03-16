@@ -1,7 +1,6 @@
 use anyhow::Result;
 use console::style;
 use itertools::Itertools;
-use spinner::SpinnerBuilder;
 use std::fmt::Display;
 use termion::{clear, cursor, event::Key};
 
@@ -76,6 +75,23 @@ impl StateData {
                     None
                 }
             }
+            (
+                Key::Alt(c),
+                State::Idle | State::Scrolling(_) | State::SelectedHit { index: _, hit: _ },
+            ) => {
+                if c.is_alphanumeric() && self.papers.len() > 0 {
+                    let d = c.to_digit(10).unwrap() - 1;
+                    if (d as usize) < self.papers.len() {
+                        self.state = State::Scrolling(d as u16);
+                        return Some(Action::Reprint);
+                    }
+                }
+                None
+            }
+            (Key::Ctrl('s'), _) => {
+                self.reset();
+                Some(Action::Reprint)
+            }
             (Key::Down, State::Scrolling(i)) => {
                 if i < self.papers.len() as u16 - 1 {
                     self.state = State::Scrolling(i + 1);
@@ -98,9 +114,15 @@ impl StateData {
                 let selected: &Paper = &self.papers[i as usize];
                 let hit = selected.0.first().unwrap();
                 match hit {
-                    PaperHit::Local(paper) => open::that(&paper.location).ok()?,
-                    PaperHit::Dblp(ref paper) => open::that(paper.ee.raw()).ok()?,
-                    PaperHit::Arxiv(ref paper) => open::that(paper.ee.raw()).ok()?,
+                    PaperHit::Local(paper) => {
+                        open::that_in_background(&paper.location);
+                    }
+                    PaperHit::Dblp(ref paper) => {
+                        open::that_in_background(paper.ee.raw());
+                    }
+                    PaperHit::Arxiv(ref paper) => {
+                        open::that_in_background(paper.ee.raw());
+                    }
                 }
                 None
             }
@@ -120,13 +142,15 @@ impl StateData {
             }
             (Key::Char(s), State::SelectedHit { index: _, hit }) => {
                 match &hit {
-                    PaperHit::Local(paper) => open::that(&paper.location).ok()?,
+                    PaperHit::Local(paper) => {
+                        open::that_in_background(&paper.location);
+                    }
                     PaperHit::Dblp(paper) => {
                         if s == '1' {
-                            open::that(paper.ee.raw()).ok()?
+                            open::that_in_background(paper.ee.raw());
                         }
                         if s == '2' {
-                            open::that(paper.url.raw()).ok()?
+                            open::that_in_background(paper.url.raw());
                         }
                         if s == '3' {
                             return Some(Action::FetchToClip(paper.bib_url()));
@@ -140,7 +164,7 @@ impl StateData {
                             ));
                         }
                         if s == '2' {
-                            open::that(paper.ee.raw()).ok()?
+                            open::that_in_background(paper.ee.raw());
                         }
                     }
                 }
@@ -163,7 +187,7 @@ impl StateData {
             writer,
             "{hide}{goto}{clear}",
             hide = cursor::Hide,
-            goto = cursor::Goto(1, 1),
+            goto = cursor::Goto(1, 4),
             clear = clear::AfterCursor
         )
         .ok();
@@ -198,7 +222,7 @@ impl StateData {
 
         // Second Line
         match &self.state {
-            State::Searching => write_line(writer, 2, &"Searching..."),
+            State::Searching => {} //write_line(writer, 2, &"Searching..."),
             State::Scrolling(i) => {
                 let selected: &Paper = &self.papers[*i as usize];
                 let string: String = selected
@@ -219,6 +243,8 @@ impl StateData {
                         2,
                         &format!("Found {} results!", self.papers().len()),
                     );
+                } else if !self.term().is_empty() {
+                    write_line(writer, 2, &"No results!");
                 } else {
                     write_line(writer, 2, &"");
                 }
@@ -279,6 +305,12 @@ impl StateData {
 
         writer.flush()?;
         Ok(())
+    }
+
+    fn reset(&mut self) {
+        self.term.clear();
+        self.papers.clear();
+        self.state = State::Idle;
     }
 }
 
