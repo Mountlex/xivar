@@ -1,10 +1,11 @@
 use anyhow::Result;
 use console::style;
 use itertools::Itertools;
+use spinner::SpinnerBuilder;
 use std::fmt::Display;
 use termion::{clear, cursor, event::Key};
 
-use crate::{merge_to_papers, paper, Paper, PaperHit, PaperRef};
+use crate::{merge_to_papers, Paper, PaperHit};
 
 use super::Action;
 

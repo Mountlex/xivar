@@ -2,13 +2,13 @@ mod state;
 
 use crate::{
     cli::util::async_download_and_save,
-    library::{lib_manager_fut, LibReq},
+    library::{lib_manager_fut, LibReq, LoadingResult},
     remotes::{self, FetchResult, Remote},
     PaperInfo, PaperUrl, Query,
 };
 use anyhow::Result;
 
-use std::io::Write;
+use std::{io::Write, time::Duration};
 use termion::{clear, cursor, event::Key, input::TermRead, raw::IntoRawMode};
 use tokio::sync::watch;
 
@@ -42,6 +42,40 @@ pub async fn interactive() -> Result<()> {
         }
     });
 
+    tokio::task::spawn(async move {
+        let mut stdout = std::io::stdout().into_raw_mode().unwrap();
+        let mut state = 0;
+        loop {
+            if state == 0 {
+                state = 1;
+                log::info!("write1");
+                write!(
+                    stdout,
+                    "{}{}{}",
+                    cursor::Goto(1, 3),
+                    clear::CurrentLine,
+                    ": "
+                )
+                .ok();
+            } else {
+                state = 0;
+                log::info!("write2");
+
+                write!(
+                    stdout,
+                    "{}{}{}{}",
+                    cursor::Goto(1, 3),
+                    cursor::Hide,
+                    clear::CurrentLine,
+                    " :"
+                )
+                .ok();
+            }
+            stdout.flush().unwrap();
+            tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+        }
+    });
+
     tokio::task::spawn(fetch_manager(
         remotes::arxiv::Arxiv,
         query_rx.clone(),
@@ -63,9 +97,17 @@ pub async fn interactive() -> Result<()> {
         result_tx.clone(),
         shutdown_tx.subscribe(),
     ));
-    tokio::task::spawn(lib_manager_fut(local_rx, shutdown_tx.subscribe()));
+    let (loading_tx, mut loading_rx) = tokio::sync::mpsc::channel::<LoadingResult>(1);
+    tokio::task::spawn(lib_manager_fut(
+        local_rx,
+        shutdown_tx.subscribe(),
+        loading_tx,
+    ));
+
+    let mut state = 0;
 
     let mut remotes_fetched: usize = 0;
+    let mut total_remotes: usize = 2;
     loop {
         tokio::select! {
             key = (&mut stdin_rx).recv() => {
@@ -122,13 +164,17 @@ pub async fn interactive() -> Result<()> {
                             data.merge_to_papers(ok_res.hits);
                         }
                     }
-                    // TODO count whether all results arrived
-                    if remotes_fetched == 3 {
+                    if remotes_fetched == total_remotes {
                         data.to_idle()
                     }
                     data.write_to_terminal(&mut stdout)?;
                 }
-            }
+            },
+            load_res = loading_rx.recv() => {
+                if let Some(LoadingResult::Success) = load_res {
+                    total_remotes += 1
+                }
+            },
         }
     }
 
