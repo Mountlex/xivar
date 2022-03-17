@@ -23,6 +23,7 @@ pub enum LibReq {
     Query {
         res_channel: tokio::sync::oneshot::Sender<Vec<LocalPaper>>,
         query: Query,
+        max_hits: usize,
     },
 }
 
@@ -52,8 +53,8 @@ pub async fn lib_manager_fut(
                                     LibReq::Save { paper } => {
                                         lib.add(paper);
                                     }
-                                    LibReq::Query { res_channel, query } => {
-                                        let results = lib.iter_matches(&query).cloned().collect();
+                                    LibReq::Query { res_channel, query, max_hits } => {
+                                        let results = lib.iter_matches(&query).cloned().take(max_hits).collect();
                                         res_channel.send(results).unwrap();
                                     }
                                 }
@@ -249,8 +250,8 @@ impl Library {
     }
 
     #[allow(dead_code)]
-    pub fn find_paper_by_path<'a>(&'a self, path: &PathBuf) -> Option<&'a LocalPaper> {
-        self.papers.iter().find(|paper| &paper.location == path)
+    pub fn find_paper_by_path<'a>(&'a self, path: &Path) -> Option<&'a LocalPaper> {
+        self.papers.iter().find(|paper| paper.location == path)
     }
 
     pub fn clean(&mut self) -> Vec<LocalPaper> {
@@ -263,7 +264,7 @@ impl Library {
         {
             to_remove.push(idx);
         }
-        to_remove.sort();
+        to_remove.sort_unstable();
         to_remove.reverse();
         let removed = to_remove
             .iter()

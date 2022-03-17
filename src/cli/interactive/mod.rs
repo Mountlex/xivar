@@ -56,7 +56,7 @@ pub async fn interactive() -> Result<()> {
     ));
 
     tokio::task::spawn(fetch_manager(
-        remotes::dblp::DBLP,
+        remotes::dblp::Dblp,
         query_rx.clone(),
         result_tx.clone(),
         progress_tx.clone(),
@@ -129,7 +129,7 @@ pub async fn interactive() -> Result<()> {
                         }
                     }
                     if remotes_fetched == total_remotes {
-                        data.to_idle()
+                        data.set_idle_state()
                     }
                     data.write_to_terminal(&mut stdout)?;
                 }
@@ -198,7 +198,7 @@ async fn progress_manager(
     let mut running: Vec<(String, u16)> = vec![];
     let tick_strings: Vec<String> = "⠁⠁⠉⠙⠚⠒⠂⠂⠒⠲⠴⠤⠄⠄⠤⠠⠠⠤⠦⠖⠒⠐⠐⠒⠓⠋⠉⠈⠈ "
         .chars()
-        .map(|c| c.to_string().into())
+        .map(|c| c.to_string())
         .collect();
     let mut state = 0;
     loop {
@@ -218,10 +218,8 @@ async fn progress_manager(
                     }
                 }
             }
-        } else {
-            if shutdown_rx.try_recv().is_ok() {
-                break;
-            }
+        } else if shutdown_rx.try_recv().is_ok() {
+            break;
         }
 
         while let Ok(req) = progress_recv.try_recv() {
@@ -289,7 +287,7 @@ async fn fetch_manager<R: Remote + std::marker::Send + Clone>(
                     progress_sender.send(ProgressRequest::Start(remote.name(), 2)).await.unwrap();
                 }
             }
-            result = remote.fetch_from_remote(Query::from(to_query.unwrap_or_default())), if to_query.is_some() => {
+            result = remote.fetch_from_remote(Query::from(to_query.unwrap_or_default()), 30), if to_query.is_some() => {
                 to_query = None;
                 progress_sender.send(ProgressRequest::Finish(remote.name())).await.unwrap();
                 if result_sender.send(result).is_err() {

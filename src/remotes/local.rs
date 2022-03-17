@@ -20,12 +20,13 @@ impl LocalRemote {
 
 #[async_trait]
 impl Remote for LocalRemote {
-    async fn fetch_from_remote(&self, query: Query) -> Result<FetchResult> {
+    async fn fetch_from_remote(&self, query: Query, max_hits: usize) -> Result<FetchResult> {
         let (res_sender, res_recv) = tokio::sync::oneshot::channel::<Vec<LocalPaper>>();
         self.query_sender
             .send(LibReq::Query {
                 res_channel: res_sender,
                 query: query.clone(),
+                max_hits,
             })
             .await?;
         let results = res_recv.await.map_err(|err| anyhow::anyhow!(err))?;
@@ -33,7 +34,7 @@ impl Remote for LocalRemote {
             query,
             hits: results
                 .into_iter()
-                .map(|p| PaperHit::Local(p))
+                .map(PaperHit::Local)
                 .collect::<Vec<PaperHit>>(),
         })
     }

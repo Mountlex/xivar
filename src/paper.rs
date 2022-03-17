@@ -5,6 +5,7 @@ use std::{
 
 use crate::{
     library::LocalPaper,
+    query::QueryTerm,
     remotes::{arxiv::ArxivPaper, dblp::DBLPPaper},
 };
 
@@ -38,7 +39,7 @@ pub fn merge_papers<I: Iterator<Item = PaperHit>>(hits: I) -> Result<Vec<Paper>>
 
 pub fn merge_to_papers<I: Iterator<Item = PaperHit>>(papers: &mut Vec<Paper>, hits: I) {
     *papers = papers
-        .into_iter()
+        .iter_mut()
         .flat_map(|p| p.0.clone())
         .chain(hits)
         .map(|p| (p.metadata().title.normalized(), p))
@@ -109,7 +110,7 @@ impl Paper {
     }
 
     pub fn metadata(&self) -> &PaperInfo {
-        &self.0.first().unwrap().metadata()
+        self.0.first().unwrap().metadata()
     }
 }
 
@@ -131,7 +132,7 @@ impl Display for Paper {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Hash)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PaperInfo {
     pub id: Option<Identifier>,
     pub title: PaperTitle,
@@ -141,7 +142,7 @@ pub struct PaperInfo {
     pub summary: Option<String>,
 }
 
-#[derive(Debug, Serialize, Deserialize, Clone, Hash, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub enum Venue {
     Journal(String),
     Conf(String),
@@ -160,18 +161,16 @@ impl Display for Venue {
 
 impl PaperInfo {
     pub fn matches(&self, query: &Query) -> bool {
-        if let Some(terms) = &query.terms {
-            if terms.is_empty() {
-                false
-            } else {
-                let info = self.single_string();
-                terms
-                    .into_iter()
-                    .all(|term| info.contains(&term.to_lowercase()))
-            }
-        } else {
-            true
-        }
+        let single_string = self.single_string();
+        let terms: Vec<String> = single_string
+            .split_whitespace()
+            .map(|t| t.trim().to_lowercase())
+            .collect();
+
+        query.into_iter().all(|term| match term {
+            QueryTerm::Exact(q) => terms.iter().any(|t| q == t),
+            QueryTerm::Prefix(q) => terms.iter().any(|t| t.starts_with(q)),
+        })
     }
 
     fn single_string(&self) -> String {
@@ -217,7 +216,7 @@ impl PaperInfo {
             self.year[2..].to_owned(),
             title
         )
-        .replace("/", "-")
+        .replace('/', "-")
     }
 }
 
@@ -243,7 +242,7 @@ impl PartialEq for PaperInfo {
 
 impl Eq for PaperInfo {}
 
-#[derive(Debug, Serialize, Deserialize, Clone, Hash)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PaperTitle {
     pub words: Vec<String>,
 }
@@ -251,8 +250,8 @@ pub struct PaperTitle {
 impl PaperTitle {
     pub fn new(title: String) -> Self {
         let words = title
-            .replace(".", "")
-            .replace("$", "")
+            .replace('.', "")
+            .replace('$', "")
             .split_whitespace()
             .map(|s| s.to_string())
             .collect();

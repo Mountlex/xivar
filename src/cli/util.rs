@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use anyhow::{anyhow, Result};
 
@@ -33,7 +33,7 @@ pub async fn async_download_and_save(
     })
 }
 
-pub async fn download_pdf(url: &str, out_path: &PathBuf) -> Result<()> {
+pub async fn download_pdf(url: &str, out_path: &Path) -> Result<()> {
     let client = reqwest::Client::new();
     let response = client
         .get(&*url)

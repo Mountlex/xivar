@@ -40,7 +40,7 @@ impl StateData {
         &self.term
     }
 
-    pub fn to_idle(&mut self) {
+    pub fn set_idle_state(&mut self) {
         self.state = State::Idle
     }
 
@@ -68,7 +68,7 @@ impl StateData {
                 Some(Action::UpdateSearch)
             }
             (Key::Down, State::Idle) => {
-                if self.papers.len() > 0 {
+                if !self.papers.is_empty() {
                     self.state = State::Scrolling(0);
                     Some(Action::Reprint)
                 } else {
@@ -79,7 +79,7 @@ impl StateData {
                 Key::Alt(c),
                 State::Idle | State::Scrolling(_) | State::SelectedHit { index: _, hit: _ },
             ) => {
-                if c.is_alphanumeric() && self.papers.len() > 0 {
+                if c.is_alphanumeric() && !self.papers.is_empty() {
                     let d = c.to_digit(10).unwrap() - 1;
                     if (d as usize) < self.papers.len() {
                         self.state = State::Scrolling(d as u16);
@@ -133,7 +133,7 @@ impl StateData {
                     let selected_hit = &selected.0[(j - 1) as usize];
                     self.state = State::SelectedHit {
                         index: i,
-                        hit: selected_hit.clone(),
+                        hit: selected_hit.clone().into(),
                     };
                     Some(Action::Reprint)
                 } else {
@@ -141,7 +141,7 @@ impl StateData {
                 }
             }
             (Key::Char(s), State::SelectedHit { index: _, hit }) => {
-                match &hit {
+                match hit.as_ref() {
                     PaperHit::Local(paper) => {
                         open::that_in_background(&paper.location);
                     }
@@ -237,7 +237,7 @@ impl StateData {
                 // }
             }
             State::Idle => {
-                if self.papers().len() > 0 {
+                if !self.papers().is_empty() {
                     write_line(
                         writer,
                         2,
@@ -253,7 +253,7 @@ impl StateData {
                 // if let Some(summary) = &hit.metadata().summary {
                 //     write_line(writer, height - 2, summary);
                 // }
-                match hit {
+                match hit.as_ref() {
                     PaperHit::Local(paper) => write_line(
                         writer,
                         2,
@@ -268,11 +268,9 @@ impl StateData {
                             paper.url.raw()
                         ),
                     ),
-                    PaperHit::Arxiv(_) => write_line(
-                        writer,
-                        2,
-                        &format!("Select action: (1) Download  (2) open online"),
-                    ),
+                    PaperHit::Arxiv(_) => {
+                        write_line(writer, 2, &"Select action: (1) Download  (2) open online")
+                    }
                 }
             }
         }
@@ -319,7 +317,7 @@ pub enum State {
     Idle,
     Searching,
     Scrolling(u16),
-    SelectedHit { index: u16, hit: PaperHit },
+    SelectedHit { index: u16, hit: Box<PaperHit> },
 }
 
 fn write_line<I: Display, W: std::io::Write>(writer: &mut W, line: u16, item: &I) {

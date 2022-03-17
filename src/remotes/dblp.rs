@@ -2,8 +2,12 @@ use std::fmt::{Display, Formatter};
 
 use anyhow::{anyhow, Result};
 use console::style;
+use itertools::Itertools;
 
-use crate::{ArxivIdentifier, Doi, Identifier, PaperInfo, PaperTitle, PaperUrl, Query, Venue};
+use crate::{
+    query::QueryTerm, ArxivIdentifier, Doi, Identifier, PaperInfo, PaperTitle, PaperUrl, Query,
+    Venue,
+};
 
 use super::{OnlineRemote, PaperHit};
 
@@ -45,30 +49,31 @@ impl Display for DBLPPaper {
 }
 
 #[derive(Clone)]
-pub struct DBLP;
+pub struct Dblp;
 
-impl OnlineRemote for DBLP {
-    fn get_url(query: Query) -> String {
-        if let Some(max_hits) = query.max_hits {
-            format!(
-                "https://dblp.org/search/publ/api?q={}&h={}",
-                query.terms.map(|t| t.join("+")).unwrap_or_default(),
-                max_hits
-            )
-        } else {
-            format!(
-                "https://dblp.org/search/publ/api?q={}",
-                query.terms.map(|t| t.join("+")).unwrap_or_default()
-            )
-        }
+impl OnlineRemote for Dblp {
+    fn get_url(query: &Query, max_hits: usize) -> String {
+        format!(
+            "https://dblp.org/search/publ/api?q={}&h={}",
+            query
+                .into_iter()
+                .map(|t| {
+                    match t {
+                        QueryTerm::Exact(q) => format!("{}$", q),
+                        QueryTerm::Prefix(q) => q.to_string(),
+                    }
+                })
+                .join("+"),
+            max_hits
+        )
     }
 
-    fn parse_response(response: &String) -> Result<Vec<PaperHit>> {
+    fn parse_response(response: &str) -> Result<Vec<PaperHit>> {
         let doc = roxmltree::Document::parse(response)?;
         let hits = doc
             .descendants()
             .find(|n| n.has_tag_name("hits"))
-            .ok_or(anyhow!("No results!"))?;
+            .ok_or_else(|| anyhow!("No results!"))?;
         let _number_of_hits = hits.attribute("total").unwrap().parse::<u32>();
 
         let papers: Vec<PaperHit> = hits
@@ -127,13 +132,13 @@ impl OnlineRemote for DBLP {
                             .children()
                             .find(|n| n.has_tag_name("ee"))
                             .map(|n| n.text().unwrap().to_owned())
-                            .unwrap_or("None".to_owned());
+                            .unwrap_or_else(|| "None".to_owned());
                         let ee = PaperUrl::new(ee_string);
                         let url_string = info
                             .children()
                             .find(|n| n.has_tag_name("url"))
                             .map(|n| n.text().unwrap().to_owned())
-                            .unwrap_or("None".to_owned());
+                            .unwrap_or_else(|| "None".to_owned());
                         let url = PaperUrl::new(url_string);
                         let id = if let Some(doi) = info.children().find(|n| n.has_tag_name("doi"))
                         {

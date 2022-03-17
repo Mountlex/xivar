@@ -9,9 +9,9 @@ pub mod local;
 use async_trait::async_trait;
 
 pub trait OnlineRemote {
-    fn get_url(query: Query) -> String;
+    fn get_url(query: &Query, max_hits: usize) -> String;
 
-    fn parse_response(response: &String) -> Result<Vec<PaperHit>>;
+    fn parse_response(response: &str) -> Result<Vec<PaperHit>>;
 
     fn name(&self) -> String;
 }
@@ -23,7 +23,7 @@ pub struct FetchResult {
 
 #[async_trait]
 pub trait Remote {
-    async fn fetch_from_remote(&self, query: Query) -> Result<FetchResult>;
+    async fn fetch_from_remote(&self, query: Query, max_hits: usize) -> Result<FetchResult>;
 
     fn name(&self) -> String;
 }
@@ -33,8 +33,8 @@ impl<R> Remote for R
 where
     R: OnlineRemote + std::marker::Send + std::marker::Sync,
 {
-    async fn fetch_from_remote(&self, query: Query) -> Result<FetchResult> {
-        let response = reqwest::get(Self::get_url(query.clone()))
+    async fn fetch_from_remote(&self, query: Query, max_hits: usize) -> Result<FetchResult> {
+        let response = reqwest::get(Self::get_url(&query, max_hits))
             .await
             .map_err(|err| anyhow!(err))?;
         let body = response.text().await.map_err(|err| anyhow!(err))?;
