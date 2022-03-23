@@ -54,16 +54,7 @@ fn load_config() -> Result<Config> {
 
     let settings = config::Config::builder()
         .add_source(config::File::from(config_file))
-        .set_default(
-            "document_dir",
-            dirs_next::document_dir()
-                .unwrap()
-                .as_path()
-                .as_os_str()
-                .to_str()
-                .unwrap()
-                .to_owned(),
-        )?
+        .set_default("document_dir", "")?
         .set_default(
             "data_dir",
             data_dir.as_os_str().to_str().unwrap().to_owned(),

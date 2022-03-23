@@ -54,10 +54,10 @@ impl OnlineRemote for Arxiv {
                 .map(|t| {
                     match t {
                         QueryTerm::Exact(q) => q.to_string(),
-                        QueryTerm::Prefix(q) => format!("{}*", q),
+                        QueryTerm::Prefix(q) => q.to_string(),
                     }
                 })
-                .join("+"),
+                .join("+AND+"),
             max_hits
         )
     }
