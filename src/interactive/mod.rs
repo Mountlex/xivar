@@ -1,22 +1,23 @@
 mod state;
 
 use crate::{
-    cli::util::async_download_and_save,
     library::{lib_manager_fut, LibReq, LoadingResult},
     remotes::{self, FetchResult, Remote},
+    util::async_download_and_save,
+    xiv_config::Config,
     PaperInfo, PaperUrl, Query,
 };
 use anyhow::Result;
 use console::style;
 use itertools::Itertools;
 
-use std::{io::Write, time::Duration};
+use std::{io::Write, path::PathBuf, time::Duration};
 use termion::{clear, cursor, event::Key, input::TermRead, raw::IntoRawMode};
 use tokio::sync::watch;
 
 use self::state::StateData;
 
-pub async fn interactive() -> Result<()> {
+pub async fn interactive(config: Config) -> Result<()> {
     let mut stdout = std::io::stdout().into_raw_mode()?;
     write!(stdout, "{}{} ", cursor::Goto(1, 1), clear::All)?;
     let mut data = StateData::new();
@@ -73,6 +74,7 @@ pub async fn interactive() -> Result<()> {
     ));
     let (loading_tx, mut loading_rx) = tokio::sync::mpsc::channel::<LoadingResult>(1);
     tokio::task::spawn(lib_manager_fut(
+        config.data_dir.clone(),
         local_rx,
         shutdown_tx.subscribe(),
         loading_tx,
@@ -104,7 +106,7 @@ pub async fn interactive() -> Result<()> {
                                 break;
                             },
                             Action::Download(info, url) => {
-                                tokio::task::spawn(download_paper(info, url, local_tx.clone(), progress_tx.clone()));
+                                tokio::task::spawn(download_paper(config.paper_dir.clone(),info, url, local_tx.clone(), progress_tx.clone()));
                             },
                             Action::FetchToClip(url) => {
                                 tokio::task::spawn(async move {
@@ -167,6 +169,7 @@ enum ProgressRequest {
 }
 
 async fn download_paper(
+    paper_dir: PathBuf,
     info: PaperInfo,
     url: PaperUrl,
     local_tx: tokio::sync::mpsc::Sender<LibReq>,
@@ -178,8 +181,10 @@ async fn download_paper(
         .await
         .unwrap();
     log::info!("Starting to download paper at {:?}", url);
-    let paper = async_download_and_save(info, url, None).await?;
-    let dest = paper.location.clone();
+    let dest = paper_dir
+        .join(info.default_filename())
+        .with_extension("pdf");
+    let paper = async_download_and_save(info, url, &dest).await?;
     log::info!("Finished downloading paper!");
     local_tx.send(LibReq::Save { paper }).await.unwrap();
     progress_tx

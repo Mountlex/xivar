@@ -1,4 +1,4 @@
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use anyhow::{anyhow, Result};
 
@@ -11,29 +11,18 @@ use crate::{PaperInfo, PaperUrl};
 pub async fn async_download_and_save(
     metadata: PaperInfo,
     download_url: PaperUrl,
-    output: Option<&PathBuf>,
+    dest: &Path,
 ) -> Result<LocalPaper> {
-    let dest = if let Some(output) = output {
-        if output.is_file() {
-            output.to_owned().with_extension("pdf")
-        } else {
-            output.join(metadata.default_filename())
-        }
-    } else {
-        crate::xivar_document_dir().join(metadata.default_filename())
-    }
-    .with_extension("pdf");
-
     download_pdf(&download_url.raw(), &dest).await?;
 
     Ok(LocalPaper {
         metadata,
-        location: dest,
+        location: dest.to_path_buf(),
         ees: vec![download_url],
     })
 }
 
-pub async fn download_pdf(url: &str, out_path: &Path) -> Result<()> {
+async fn download_pdf(url: &str, out_path: &Path) -> Result<()> {
     let client = reqwest::Client::new();
     let response = client
         .get(&*url)

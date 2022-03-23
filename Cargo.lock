@@ -2054,7 +2054,6 @@ dependencies = [
  "itertools",
  "log",
  "lopdf",
- "once_cell",
  "open",
  "proc-macro2",
  "regex",

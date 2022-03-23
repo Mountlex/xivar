@@ -34,11 +34,11 @@ pub enum LoadingResult {
 }
 
 pub async fn lib_manager_fut(
+    data_dir: PathBuf,
     mut req_recv: tokio::sync::mpsc::Receiver<LibReq>,
     mut shutdown_rx: tokio::sync::broadcast::Receiver<()>,
     loading_tx: tokio::sync::mpsc::Sender<LoadingResult>,
 ) {
-    let data_dir = crate::xivar_data_dir();
     log::info!("Load library...");
 
     match Library::open(&data_dir) {

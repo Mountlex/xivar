@@ -1,80 +1,70 @@
-mod cli;
-//mod config;
+mod clean;
 mod identifier;
+mod interactive;
 mod library;
 mod paper;
 mod query;
 mod remotes;
+mod util;
+mod xiv_config;
 
-use config::Config;
+use clean::Clean;
 pub use identifier::*;
-use once_cell::sync::Lazy;
 pub use paper::*;
 pub use query::Query;
 
 use clap::Parser;
-use cli::Cli;
+use clap::Subcommand;
 
-use std::path::PathBuf;
-
-use anyhow::{bail, Result};
-
-pub fn xivar_data_dir() -> PathBuf {
-    let path = CONFIG.get::<String>("data_dir").unwrap();
-    PathBuf::from(path)
-}
-
-pub fn xivar_document_dir() -> PathBuf {
-    let path = CONFIG.get::<String>("document_dir").unwrap();
-    PathBuf::from(path)
-}
-
-fn load_config() -> Result<Config> {
-    let config_file = match dirs_next::config_dir() {
-        Some(mut config_dir) => {
-            config_dir.push("xivar");
-            config_dir.push("xivar.toml");
-            config_dir
-        }
-        None => bail!("Could not find or create config file!"),
-    };
-
-    if !config_file.exists() {
-        std::fs::create_dir_all(config_file.parent().unwrap()).unwrap();
-        std::fs::File::create(&config_file)?;
-    }
-
-    let data_dir = match dirs_next::data_local_dir() {
-        Some(mut data_dir) => {
-            data_dir.push("xivar");
-            data_dir
-        }
-        None => bail!("Could not find or create data dir!"),
-    };
-
-    let settings = config::Config::builder()
-        .add_source(config::File::from(config_file))
-        .set_default("document_dir", "")?
-        .set_default(
-            "data_dir",
-            data_dir.as_os_str().to_str().unwrap().to_owned(),
-        )?
-        .build()?;
-
-    Ok(settings)
-}
-
-pub(crate) static CONFIG: Lazy<Config> = Lazy::new(|| load_config().unwrap());
+use anyhow::Result;
 
 #[tokio::main]
-async fn main() {
+async fn main() -> Result<()> {
     if let Err(err) = set_up_logging() {
         println!("{}", err);
     }
 
-    let app = Cli::parse();
-    if let Err(err) = app.run().await {
+    let app = App::parse();
+    let config = xiv_config::load_config()?;
+
+    if let Err(err) = app.run(config).await {
         println!("{}", err);
+    }
+
+    Ok(())
+}
+
+#[derive(Parser, Debug)]
+#[clap(
+    version = "0.4.0",
+    author = "Alexander Lindermayr <alexander.lindermayr97@gmail.com>",
+    about = "Manage your local scientific library!"
+)]
+pub struct App {
+    #[clap(subcommand)]
+    helper: Option<Helpers>,
+}
+
+impl App {
+    pub async fn run(&self, config: xiv_config::Config) -> Result<()> {
+        if let Some(helper) = &self.helper {
+            helper.run(config)
+        } else {
+            interactive::interactive(config).await
+        }
+    }
+}
+
+#[derive(Subcommand, Debug)]
+pub enum Helpers {
+    Clean(Clean),
+}
+
+impl Helpers {
+    fn run(&self, config: xiv_config::Config) -> Result<()> {
+        match &self {
+            Helpers::Clean(h) => h.run(config),
+        }
     }
 }
 

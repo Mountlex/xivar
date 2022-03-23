@@ -1,7 +1,7 @@
 use anyhow::Result;
 use clap::Parser;
 
-use crate::library::Library;
+use crate::{library::Library, xiv_config::Config};
 
 #[derive(Parser, Debug)]
 #[clap(about = "Remove non-existent files from your library")]
@@ -11,8 +11,8 @@ pub struct Clean {
 }
 
 impl Clean {
-    pub fn run(&self) -> Result<()> {
-        let data_dir = crate::xivar_data_dir();
+    pub fn run(&self, config: Config) -> Result<()> {
+        let data_dir = config.data_dir;
         let mut lib = Library::open(&data_dir)?;
 
         let removed = if self.all { lib.clear() } else { lib.clean() };
