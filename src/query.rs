@@ -1,39 +1,57 @@
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Query {
-    pub terms: Option<Vec<String>>,
-    pub max_hits: Option<u32>,
+    terms: Vec<QueryTerm>,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub enum QueryTerm {
+    Prefix(String),
+    Exact(String),
 }
 
 impl Query {
-    pub fn builder() -> QueryBuilder {
-        QueryBuilder::new()
+    pub fn empty() -> Query {
+        Query { terms: vec![] }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.terms.is_empty()
     }
 }
 
-pub struct QueryBuilder {
-    terms: Option<Vec<String>>,
-    max_hits: Option<Option<u32>>,
+impl IntoIterator for Query {
+    type Item = QueryTerm;
+    type IntoIter = std::vec::IntoIter<Self::Item>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.terms.into_iter()
+    }
 }
 
-impl QueryBuilder {
-    pub fn new() -> QueryBuilder {
-        QueryBuilder {
-            terms: None,
-            max_hits: None,
-        }
+impl<'a> IntoIterator for &'a Query {
+    type Item = &'a QueryTerm;
+    type IntoIter = std::slice::Iter<'a, QueryTerm>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.terms.iter()
     }
-    pub fn terms(mut self, terms: Vec<String>) -> QueryBuilder {
-        self.terms = Some(terms);
-        self
-    }
-    pub fn max_hits(mut self, max_hits: Option<u32>) -> QueryBuilder {
-        self.max_hits = Some(max_hits);
-        self
-    }
-    pub fn build(self) -> Query {
-        Query {
-            terms: self.terms,
-            max_hits: self.max_hits.unwrap_or_else(|| None),
-        }
+}
+
+impl From<String> for Query {
+    fn from(text: String) -> Self {
+        let terms = text
+            .split_whitespace()
+            .map(|t| {
+                let prep = t.trim().to_lowercase();
+                if prep.ends_with('$') {
+                    let mut chars = prep.chars();
+                    chars.next_back();
+                    QueryTerm::Exact(chars.as_str().to_string())
+                } else {
+                    QueryTerm::Prefix(prep)
+                }
+            })
+            .collect();
+        Self { terms }
     }
 }

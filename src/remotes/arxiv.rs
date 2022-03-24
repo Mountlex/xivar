@@ -2,10 +2,13 @@ use std::fmt::{Display, Formatter};
 
 use anyhow::{anyhow, Result};
 use console::style;
+use itertools::Itertools;
 
-use crate::{ArxivIdentifier, Identifier, PaperInfo, PaperTitle, PaperUrl, Query};
+use crate::{
+    query::QueryTerm, ArxivIdentifier, Identifier, PaperInfo, PaperTitle, PaperUrl, Query, Venue,
+};
 
-use super::{PaperHit, Remote, RemoteTag};
+use super::{OnlineRemote, PaperHit};
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ArxivPaper {
@@ -24,10 +27,8 @@ impl ArxivPaper {
             self.metadata.id.as_ref().unwrap()
         ))
     }
-}
 
-impl RemoteTag for ArxivPaper {
-    fn remote_tag(&self) -> String {
+    pub fn remote_tag(&self) -> String {
         style(format!("arXiv({})", self.metadata().year))
             .yellow()
             .bold()
@@ -41,30 +42,32 @@ impl Display for ArxivPaper {
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct Arxiv;
 
-impl Remote for Arxiv {
-    fn get_url(query: Query) -> String {
-        if let Some(max_hits) = query.max_hits {
-            format!(
-                "http://export.arxiv.org/api/query?search_query={}&max_results={}",
-                query.terms.map(|t| t.join("+AND+")).unwrap_or_default(),
-                max_hits
-            )
-        } else {
-            format!(
-                "http://export.arxiv.org/api/query?search_query={}",
-                query.terms.map(|t| t.join("+AND+")).unwrap_or_default(),
-            )
-        }
+impl OnlineRemote for Arxiv {
+    fn get_url(query: &Query, max_hits: usize) -> String {
+        format!(
+            "http://export.arxiv.org/api/query?search_query={}&max_results={}",
+            query
+                .into_iter()
+                .map(|t| {
+                    match t {
+                        QueryTerm::Exact(q) => q.to_string(),
+                        QueryTerm::Prefix(q) => q.to_string(),
+                    }
+                })
+                .join("+AND+"),
+            max_hits
+        )
     }
 
-    fn parse_response(response: &String) -> Result<Vec<PaperHit>> {
+    fn parse_response(response: &str) -> Result<Vec<PaperHit>> {
         let doc = roxmltree::Document::parse(response)?;
         let feed = doc
             .descendants()
             .find(|n| n.has_tag_name("feed"))
-            .ok_or(anyhow!("No results!"))?;
+            .ok_or_else(|| anyhow!("No results!"))?;
 
         let papers: Vec<PaperHit> = feed
             .children()
@@ -77,7 +80,7 @@ impl Remote for Arxiv {
                     .text()
                     .unwrap()
                     .to_owned();
-                let _summary = entry
+                let summary = entry
                     .children()
                     .find(|n| n.has_tag_name("summary"))
                     .unwrap()
@@ -90,7 +93,7 @@ impl Remote for Arxiv {
                     .unwrap()
                     .text()
                     .unwrap()
-                    .split("-")
+                    .split('-')
                     .collect::<Vec<&str>>()
                     .first()
                     .unwrap()
@@ -115,7 +118,7 @@ impl Remote for Arxiv {
                     .children()
                     .find(|n| n.has_tag_name("id"))
                     .map(|n| n.text().unwrap().to_owned())
-                    .unwrap_or("None".to_owned());
+                    .unwrap_or_else(|| "None".to_owned());
                 let ee = PaperUrl::new(url_string);
                 let id = ArxivIdentifier::parse_string(&ee.raw())
                     .ok()
@@ -125,9 +128,10 @@ impl Remote for Arxiv {
                 let paper = PaperInfo {
                     id: Some(id),
                     authors,
-                    venue: "CoRR".to_owned(),
+                    venue: Venue::Journal("CoRR".to_owned()),
                     title: PaperTitle::new(title),
                     year,
+                    summary: Some(summary),
                 };
                 PaperHit::Arxiv(ArxivPaper {
                     metadata: paper,
@@ -137,5 +141,9 @@ impl Remote for Arxiv {
             .collect();
 
         Ok(papers)
+    }
+
+    fn name(&self) -> String {
+        style("arXiv").yellow().bold().to_string()
     }
 }

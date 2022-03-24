@@ -1,19 +1,21 @@
 use anyhow::Result;
-use clap::Clap;
+use clap::Parser;
 
-use super::Command;
-use crate::{config, remotes::local::Library};
+use crate::{library::Library, xiv_config::Config};
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(about = "Remove non-existent files from your library")]
-pub struct Clean;
+pub struct Clean {
+    #[clap(long)]
+    all: bool,
+}
 
-impl Command for Clean {
-    fn run(&self) -> Result<()> {
-        let data_dir = config::xivar_data_dir()?;
+impl Clean {
+    pub fn run(&self, config: Config) -> Result<()> {
+        let data_dir = config.data_dir;
         let mut lib = Library::open(&data_dir)?;
 
-        let removed = lib.clean();
+        let removed = if self.all { lib.clear() } else { lib.clean() };
 
         if removed.is_empty() {
             println!("Nothing to remove.");

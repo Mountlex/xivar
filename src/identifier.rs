@@ -28,7 +28,7 @@ pub struct ArxivIdentifier {
 
 impl ArxivIdentifier {
     pub fn parse_string(id: &str) -> Result<Self> {
-        let temp = id.split("/").last().unwrap();
+        let temp = id.split('/').last().unwrap();
         let re = Regex::new(r"(\d{2})(\d{2})\.?(\d+)").unwrap();
         if let Some(capture) = re.captures(temp) {
             Ok(ArxivIdentifier {

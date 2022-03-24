@@ -1,28 +1,28 @@
 use std::path::PathBuf;
 
 use anyhow::{bail, Result};
-use clap::Clap;
+use clap::Parser;
 use console::{style, Term};
 use dialoguer::{theme::ColorfulTheme, Confirm, Input, Select};
 use lopdf::{Document, Object};
 
-use super::{util, Command};
+use super::util;
 
 use crate::{
     config,
-    remotes::local::{Library, LocalPaper},
+    library::{Library, LocalPaper},
     Identifier, PaperInfo, PaperTitle, Query,
 };
 
-#[derive(Clap, Debug)]
+#[derive(Parser, Debug)]
 #[clap(about = "Add a local PDF to your library")]
 pub struct Add {
     #[clap(parse(from_os_str))]
     pdf_file: PathBuf,
 }
 
-impl Command for Add {
-    fn run(&self) -> Result<()> {
+impl Add {
+    pub fn run(&self) -> Result<()> {
         if self.pdf_file.is_file() && "pdf" == self.pdf_file.extension().unwrap() {
             let data_dir = config::xivar_data_dir()?;
             let mut lib = Library::open(&data_dir)?;
