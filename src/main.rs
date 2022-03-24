@@ -35,11 +35,7 @@ async fn main() -> Result<()> {
 }
 
 #[derive(Parser, Debug)]
-#[clap(
-    version = "0.4.0",
-    author = "Alexander Lindermayr <alexander.lindermayr97@gmail.com>",
-    about = "Manage your local scientific library!"
-)]
+#[clap(version, author, about)]
 pub struct App {
     #[clap(subcommand)]
     helper: Option<Helpers>,
