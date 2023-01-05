@@ -112,8 +112,7 @@ pub async fn interactive(config: Config) -> Result<()> {
                                 tokio::task::spawn(async move {
                                     let response = reqwest::get(&url.raw()).await.map_err(|err| anyhow::anyhow!(err))?;
                                     let body: String = response.text().await.map_err(|err| anyhow::anyhow!(err))?;
-                                    tokio::fs::write("/tmp/xivar.bib", body).await?;
-                                    open::that_in_background("/tmp/xivar.bib");
+                                    cli_clipboard::set_contents(body).unwrap();
                                     Ok::<(), anyhow::Error>(())
                                 });
                             },
@@ -191,7 +190,7 @@ async fn download_paper(
         .send(ProgressRequest::Finish(msg))
         .await
         .unwrap();
-    open::that_in_background(&dest);
+    open::that(&dest)?;
     Ok::<(), anyhow::Error>(())
 }
 
