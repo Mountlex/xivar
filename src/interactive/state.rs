@@ -115,13 +115,13 @@ impl StateData {
                 let hit = selected.0.first().unwrap();
                 match hit {
                     PaperHit::Local(paper) => {
-                        open::that_in_background(&paper.location);
+                        open::that(&paper.location).unwrap();
                     }
                     PaperHit::Dblp(ref paper) => {
-                        open::that_in_background(paper.ee.raw());
+                        open::that(paper.ee.raw()).unwrap();
                     }
                     PaperHit::Arxiv(ref paper) => {
-                        open::that_in_background(paper.ee.raw());
+                        open::that(paper.ee.raw()).unwrap();
                     }
                 }
                 None
@@ -143,14 +143,14 @@ impl StateData {
             (Key::Char(s), State::SelectedHit { index: _, hit }) => {
                 match hit.as_ref() {
                     PaperHit::Local(paper) => {
-                        open::that_in_background(&paper.location);
+                        open::that(&paper.location).unwrap();
                     }
                     PaperHit::Dblp(paper) => {
                         if s == '1' {
-                            open::that_in_background(paper.ee.raw());
+                            open::that(paper.ee.raw()).unwrap();
                         }
                         if s == '2' {
-                            open::that_in_background(paper.url.raw());
+                            open::that(paper.url.raw()).unwrap();
                         }
                         if s == '3' {
                             return Some(Action::FetchToClip(paper.bib_url()));
@@ -164,7 +164,7 @@ impl StateData {
                             ));
                         }
                         if s == '2' {
-                            open::that_in_background(paper.ee.raw());
+                            open::that(paper.ee.raw()).unwrap();
                         }
                     }
                 }
@@ -263,7 +263,7 @@ impl StateData {
                         writer,
                         2,
                         &format!(
-                            "Select action: (1) {:15}  (2) {:15}  (3) Show bib file",
+                            "Select action: (1) {:15}  (2) {:15}  (3) Copy bib file to clipboard",
                             paper.ee.raw(),
                             paper.url.raw()
                         ),

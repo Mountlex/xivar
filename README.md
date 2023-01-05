@@ -3,7 +3,7 @@
 [![crates.io](https://img.shields.io/crates/v/xivar.svg)](https://crates.io/crates/xivar)
 ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Mountlex/xivar/Rust)
 ![actively developed](https://img.shields.io/badge/maintenance-actively--developed-brightgreen.svg)
-[![dependency status](https://deps.rs/crate/xivar/0.4.0/status.svg)](https://deps.rs/crate/xivar/0.4.0)
+[![dependency status](https://deps.rs/crate/xivar/0.5.0/status.svg)](https://deps.rs/crate/xivar/0.5.0)
 ![License: MIT/Apache-2.0](https://img.shields.io/crates/l/xivar.svg)
 
 Manage your local scientific library!
@@ -27,13 +27,7 @@ cargo install xivar
 Search a publication online and local.
 
 ```bash
-xivar search keyword1 keyword2 ...
-```
-
-Search only locally saved files.
-
-```bash
-xivar local keyword1 keyword2 ...
+xivar
 ```
 
 ### Clean
@@ -43,16 +37,6 @@ Clean your database, i.e. remove entries of publications which cannot be found a
 ```bash
 xivar clean
 ```
-
-### Add
-
-Add a local pdf to the database.
-
-```bash
-xivar add paper.pdf
-```
-
-If `xivar` finds any metadata in the PDF-file, you can confirm to search the title online. If you can find the matching paper online, all necessary information will be fetched and written to your library. Otherwise, you have to manually enter them.
 
 ## Configuration
 
@@ -68,6 +52,5 @@ document_dir = "absolute/path/to/directory"
 ## Roadmap
 
 - Update library
-- Export bib-files
 - Specify query more precisely (title, author, AND, OR etc.)
 - ...
