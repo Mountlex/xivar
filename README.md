@@ -1,9 +1,9 @@
 # XivAr
 
 [![crates.io](https://img.shields.io/crates/v/xivar.svg)](https://crates.io/crates/xivar)
-![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Mountlex/xivar/Rust)
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/Mountlex/xivar/rust.yml?branch=main)
 ![actively developed](https://img.shields.io/badge/maintenance-actively--developed-brightgreen.svg)
-[![dependency status](https://deps.rs/crate/xivar/0.5.0/status.svg)](https://deps.rs/crate/xivar/0.5.0)
+[![dependency status](https://deps.rs/crate/xivar/0.5.1/status.svg)](https://deps.rs/crate/xivar/0.5.1)
 ![License: MIT/Apache-2.0](https://img.shields.io/crates/l/xivar.svg)
 
 Manage your local scientific library!
